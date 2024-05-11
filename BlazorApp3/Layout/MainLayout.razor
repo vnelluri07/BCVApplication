@@ -1,0 +1,17 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="new BCVTheme().THEME" />
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Medium" />
+<MudSnackbarProvider />
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="margin-bottom: 60px;">
+    <div class="main-content flex-column justify-center">
+        <div>
+            @Body
+        </div>
+    </div>
+</MudContainer>
+
+<header>
+    <NavMenu />
+</header>

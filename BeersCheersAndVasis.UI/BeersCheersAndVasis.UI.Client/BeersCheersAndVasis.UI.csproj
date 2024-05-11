@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\BeersCheersVasis.Api.Client\BeersCheersVasis.Api.Client.csproj" />
+		<ProjectReference Include="..\BeersCheersAndVasis.UI.Client\BeersCheersAndVasis.UI.Client.csproj" />
+		<PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="6.8.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
+		<PackageReference Include="MudBlazor" Version="6.15.0" />
+		<PackageReference Include="MudBlazor.ThemeManager" Version="1.0.8" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Data\" />
+	</ItemGroup>
+
+</Project>

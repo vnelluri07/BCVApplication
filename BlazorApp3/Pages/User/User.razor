@@ -1,0 +1,20 @@
+﻿@page "/Users"
+@using MudBlazor;
+@using BeersCheersVasis.UI.ViewModels.UserManagement.Users
+
+<MudGrid>
+    <MudCard>
+        <MudTable T="UserViewModel" Items="_model.Users" Hover="true">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Email</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="user">
+                <MudTd>@user.Id</MudTd>
+                <MudTd>@user.UserName</MudTd>
+                <MudTd>@user.UserEmail</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudCard>
+</MudGrid>
