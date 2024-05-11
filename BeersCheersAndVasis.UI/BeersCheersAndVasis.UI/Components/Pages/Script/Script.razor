@@ -1,0 +1,15 @@
+﻿@page "/scripts"
+@using BeersCheersAndVasis.UI.ViewModels.Script
+
+<MudTable T="ScriptViewModel" Items="_model.Scripts" Hover="true">
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Title</MudTh>
+        <MudTh>Content</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Id</MudTd>
+        <MudTd>@context.Title</MudTd>
+        <MudTd>@context.Content</MudTd>
+    </RowTemplate>
+</MudTable>

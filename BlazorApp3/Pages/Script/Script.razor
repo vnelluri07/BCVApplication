@@ -1,0 +1,35 @@
+﻿@page "/"
+@using MudBlazor
+@using BeersCheersAndVasis.UI.ViewModels.Script
+
+
+<MudPaper Class="pt-14">
+    @foreach (var script in _model.Scripts)
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudText> @script.Title</MudText>
+                <MudText Typo="Typo.body2">@script.Content</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" >Read more</MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+</MudPaper>
+
+<MudPaper Class="pt-12">
+
+    <MudTable Class="pt-4" T="ScriptViewModel" Items="_model.Scripts" Hover="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh>Content</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="script">
+            <MudTd>@script.Id</MudTd>
+            <MudTd>@script.Title</MudTd>
+            <MudTd>@script.Content</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>

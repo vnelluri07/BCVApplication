@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BeersCheersVasis.Api.Client\BeersCheersVasis.Api.Client.csproj" />
+    <ProjectReference Include="..\BeersCheersVasis.Api.Models\BeersCheersVasis.Api.Models.csproj" />
+    <ProjectReference Include="..\BeersCheersVasis.Data\BeersCheersVasis.Data.csproj" />
+  </ItemGroup>
+
+</Project>
