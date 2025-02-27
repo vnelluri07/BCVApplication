@@ -2,27 +2,15 @@
 @using MudBlazor
 @using BeersCheersAndVasis.UI.ViewModels.Script
 
-
-<MudPaper Class="pt-14">
-    @foreach (var script in _model.Scripts)
-    {
-        <MudCard>
-            <MudCardContent>
-                <MudText> @script.Title</MudText>
-                <MudText Typo="Typo.body2">@script.Content</MudText>
-            </MudCardContent>
-            <MudCardActions>
-                <MudButton Variant="Variant.Filled" Color="Color.Secondary" >Read more</MudButton>
-            </MudCardActions>
-        </MudCard>
-    }
-</MudPaper>
-
-<MudPaper Class="pt-12">
-
+<PageTitle>Vasi Scripts</PageTitle>
+<MudPaper Class="mt-12">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudOverlay Visible="isLoading">
+            <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+        </MudOverlay>
     <MudTable Class="pt-4" T="ScriptViewModel" Items="_model.Scripts" Hover="true">
         <HeaderContent>
-            <MudTh>Id</MudTh>
+            <MudTh>T#</MudTh>
             <MudTh>Title</MudTh>
             <MudTh>Content</MudTh>
         </HeaderContent>
@@ -30,6 +18,8 @@
             <MudTd>@script.Id</MudTd>
             <MudTd>@script.Title</MudTd>
             <MudTd>@script.Content</MudTd>
+            <MudTd><MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="@(() => ReadMore_OnClick(script))">Read more</MudButton></MudTd>
         </RowTemplate>
     </MudTable>
+    </MudContainer>
 </MudPaper>

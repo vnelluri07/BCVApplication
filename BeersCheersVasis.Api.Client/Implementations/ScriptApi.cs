@@ -11,13 +11,37 @@ public sealed class ScriptApi : IScriptApi
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
-    public async Task<IEnumerable<ScriptResponse>> ListScriptsAsync()
+    public async Task<IEnumerable<ScriptResponse>> ListAsync()
     {
-        var result = await _httpClient.GetFromJsonAsync<IEnumerable<ScriptResponse>>("Script/GetAllScripts");
-        if (result == null)
+        try
         {
-            throw new Exception("No scripts found.");
+            var result = await _httpClient.GetFromJsonAsync<IEnumerable<ScriptResponse>>("Script/GetAllScripts");
+            if (result == null)
+            {
+                throw new Exception("No scripts found.");
+            }
+            return result;
         }
-        return result;
+        catch (Exception ex)
+        {
+            throw ex.InnerException!;
+        }
+    }
+
+    public async Task<string> CreateAsync(CreateScriptRequest request)
+    {
+        try
+        {
+            var result = await _httpClient.PostAsJsonAsync<CreateScriptRequest, string>("Script/create", request);
+            if (result == null)
+            {
+                throw new Exception("script not saved.");
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            throw ex.InnerException!;
+        }
     }
 }

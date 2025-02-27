@@ -18,28 +18,42 @@ public class ScriptRepository : IScriptRepository
 
     public async Task<IEnumerable<ScriptResponse>> GetScriptsAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            var scripts = await _dbContext.Script.ToListAsync(cancellationToken);
 
-            return scripts.Select(s => new ScriptResponse
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Content = s.Content,
-                IsActive = s.IsActive,
-                CreatedBy = s.CreatedByUserId,
-                CreatedDate = s.CreatedDate,
-                ModifiedBy = s.ModifiedByUserId,
-                ModifiedDate = s.ModifiedDate
-            }).ToList();
-        }
-        catch (Exception ex)
-        {
+        var scripts = await _dbContext.Script.ToListAsync(cancellationToken);
 
-            throw ex.InnerException;
-        }
+        return scripts.Select(s => new ScriptResponse
+        {
+            Id = s.Id,
+            Title = s.Title,
+            Content = s.Content,
+            IsActive = s.IsActive,
+            CreatedBy = s.CreatedByUserId,
+            CreatedDate = s.CreatedDate,
+            ModifiedBy = s.ModifiedByUserId,
+            ModifiedDate = s.ModifiedDate
+        }).ToList();
     }
+
+    public async Task<ScriptResponse> GetScriptAsync(int id, CancellationToken cancellationToken)
+    {
+        var script = await _dbContext.Script.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (script is null)
+            return new ScriptResponse();
+
+        return new ScriptResponse
+        {
+            Id = script.Id,
+            Title = script.Title,
+            Content = script.Content,
+            IsActive = script.IsActive,
+            CreatedBy = script.CreatedByUserId,
+            CreatedDate = script.CreatedDate,
+            ModifiedBy = script.ModifiedByUserId,
+            ModifiedDate = script.ModifiedDate
+        };
+    }
+
 
     public async Task<ScriptResponse> CreateScriptAsync(CreateScriptRequest request, CancellationToken cancellationToken)
     {

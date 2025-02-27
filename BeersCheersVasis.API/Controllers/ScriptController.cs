@@ -22,7 +22,14 @@ public class ScriptController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("CreateScript")]
+    [HttpGet("GetScript/{id}")]
+    public async Task<IActionResult> GetScriptAsync(int id, CancellationToken cancellationToken)
+    {
+        var result = await _scriptService.GetScriptAsync(id, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("create")]
     public async Task<IActionResult> CreateScriptAsync(CreateScriptRequest request, CancellationToken cancellationToken)
     {
         //TODO: Temp stuff
