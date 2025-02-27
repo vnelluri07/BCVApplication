@@ -12,6 +12,8 @@ namespace BlazorApp3.Pages.Script
         //[Inject] private IDialogService DialogService { get; set; } = default!;
         //[Inject] private ISnackbar Snackbar { get; set; } = default!;
         //[CascadingParameter] MudDialogInstance MudDialog { get; set; } = new();
+        [Inject] private NavigationManager _navManager{get; set;} = default!;
+        bool isLoading = false;
 
         protected override async Task OnInitializedAsync()
         {
@@ -25,13 +27,21 @@ namespace BlazorApp3.Pages.Script
                 throw new NullReferenceException(nameof(ScriptController));
             }
 
-            //isLoading = true;
+            isLoading = true;
             _model = await Controller.OnInitializeAsync();
-            //isLoading = false;
+            isLoading = false;
 
             //DisplayMessages();
 
-            //await InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
+        }
+
+        private async Task ReadMore_OnClick(ScriptViewModel script) 
+        {
+            if (script is not null) 
+            {
+                _navManager.NavigateTo($"/readscript/{script.Id}");
+            }
         }
     }
 }

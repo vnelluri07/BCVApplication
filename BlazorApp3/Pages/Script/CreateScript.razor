@@ -1,0 +1,145 @@
+﻿@page "/create"
+@using BeersCheersAndVasis.UI.Components.Pages.Script
+@using BeersCheersVasis.Api.Models.Script;
+
+<div class="page-container">
+    <MudText Typo="Typo.h5" Class="page-title">Title</MudText>
+
+    <MudPaper Class="mud-paper rounded text-area-container mt-4">
+        <MudTextField T="string"
+                      Class="title"
+                      Placeholder="Title"
+                      FullWidth="true"
+                      @bind-Value="title" />
+
+        <MudText Typo="Typo.h6" Class="script-content-title mt-4">Script/Content</MudText>
+        <MudTextField T="string"
+                      Class="text-area"
+                      Placeholder="Start typing here..."
+                      Lines="25"
+                      FullWidth="true"
+                      Immediate="true"
+                      MultiLine="true"
+                      @bind-Value="textInput"
+                      OnKeyUp="OnScriptKeydown" />
+
+        <div class="word-count-publish mt-2">
+            <MudTextField  Typo="Typo.body2" Class="word-count" @bind-Value="@WordCount"></MudTextField>
+            <MudButton OnClick="@OnPublishClick" Color="Color.Secondary" Variant="Variant.Filled">Publish</MudButton>
+        </div>
+    </MudPaper>
+
+    <MudPaper Class="mud-paper rounded display-area-container mt-4">
+        <MudText Typo="Typo.h6">Rendered Text:</MudText>
+        <pre class="rendered-text">@RenderTextWithLineBreaks(textInput)</pre>
+    </MudPaper>
+</div>
+
+@code {
+    [Inject] private ScriptController Controller { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    private string textInput;
+    private string title;
+    private long WordCount = 0;
+
+    private async Task<long> OnScriptKeydown()
+    {
+        var value = string.IsNullOrWhiteSpace(textInput)
+        ? 0
+        : textInput.Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length;
+
+        WordCount = value;
+        return WordCount;
+
+        StateHasChanged();
+    }
+
+    private MarkupString RenderTextWithLineBreaks(string text)
+    {
+        return new MarkupString(text?.Replace("\n", "<br />"));
+        StateHasChanged();
+    }
+
+    private async Task OnPublishClick()
+    {
+        var request = new CreateScriptRequest
+            {
+                Title = title,
+                Content = RenderTextWithLineBreaks(textInput).ToString(),
+                CreatedBy = 0022
+            };
+
+        await SubmitToApi(request);
+    }
+
+    private async Task SubmitToApi(CreateScriptRequest request)
+    {
+        var response = await Controller.CreateScript(request);
+        Snackbar.Add(response, Severity.Success);
+    }
+}
+
+<style>
+    /* Apply Courier New to the entire page */
+    body {
+        font-family: "Courier New", monospace;
+    }
+
+    .page-container {
+        padding-top: 4em; /* Adjust this value for more or less spacing */
+    }
+
+    .page-title {
+        margin-bottom: 1em;
+    }
+
+    .text-area-container, .display-area-container {
+        padding: 20px;
+        background-color: #f7f7f7;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .title {
+        padding: 10px;
+        font-size: 20px;
+        height: 55px;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #ffffff;
+        margin-bottom: 1em; /* Add margin to avoid overlap */
+    }
+
+    s
+    .script-content-title {
+        margin-top: 1em; /* Add margin to avoid overlap */
+    }
+
+    .text-area {
+        padding: 10px;
+        font-size: 16px;
+        height: 510px;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #ffffff;
+    }
+
+    .word-count {
+        color: #555;
+    }
+
+    .rendered-text {
+        white-space: pre-wrap;
+        font-size: 16px;
+    }
+
+    .word-count-publish {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1em; /* Add margin to avoid overlap */
+    }
+</style>

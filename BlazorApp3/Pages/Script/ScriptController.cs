@@ -1,5 +1,6 @@
 ﻿using BeersCheersAndVasis.UI.ViewModels.Script;
 using BeersCheersVasis.Api.Client;
+using BeersCheersVasis.Api.Models.Script;
 using BeersCheersVasis.UI.ViewModels.UserManagement.Users;
 
 namespace BeersCheersAndVasis.UI.Components.Pages.Script;
@@ -24,7 +25,7 @@ public class ScriptController
     {
         try
         {
-            var scripts = await _api.ScriptApi.ListScriptsAsync();
+            var scripts = await _api.ScriptApi.ListAsync();
 
             return model.SetScrpts(scripts.Select(s => new ScriptViewModel(
                 s.Id,
@@ -38,4 +39,19 @@ public class ScriptController
             throw;
         }
     }
+
+    public async Task<string> CreateScript(CreateScriptRequest request)
+    {
+        var response = await _api.ScriptApi.CreateAsync(request);
+        return response;
+    }
+
+
+
+    //TODO: will need this eventually, of course
+    //public async Task<string> UpdateScript(UpdateScriptRequest request)
+    //{
+    //    var response = await _api.ScriptApi.UpdateAsync(request);
+    //    return response;
+    //}
 }
