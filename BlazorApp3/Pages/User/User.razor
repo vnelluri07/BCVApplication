@@ -4,7 +4,10 @@
 
 <MudGrid>
     <MudCard>
-        <MudTable T="UserViewModel" Items="_model.Users" Hover="true">
+        <MudOverlay Visible="@isLoading" DarkBackground="true" Absolute="true">
+            <MudProgressCircular ></MudProgressCircular>
+        </MudOverlay>
+        <MudTable T="UserViewModel" Items="@_model.Users" Hover="true">
             <HeaderContent>
                 <MudTh>Id</MudTh>
                 <MudTh>Name</MudTh>
