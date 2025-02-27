@@ -10,8 +10,6 @@ public partial class User
     //[Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     private bool isLoading = false;
-    private bool _isViewingActive = true;
-
     protected async override Task OnInitializedAsync()
     {
         await InitPage();

@@ -6,11 +6,11 @@
         {
             Palette = new PaletteLight()
             {
-                Primary = "#022f40", // Pursian Blue
+                Primary = "#FB5062", // Pursian Blue
                 PrimaryContrastText = "#f2f2f2", // Air Force Blue
                 Dark = "#f2f2f2", // Reversed this since there is no Light. need it to make the links white.
                 AppbarText = Colors.Shades.White,
-                Secondary = "#780000", // want burguendy
+                Secondary = "#C2A140", // want burguendy
                 AppbarBackground = "#588390",
                 Black = "#444444",
                 TextPrimary = "#444444",
