@@ -9,7 +9,6 @@ public sealed class LinkPreviewService : ILinkPreviewService
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
-    // oEmbed endpoints for popular providers
     private static readonly Dictionary<string, string> OEmbedProviders = new(StringComparer.OrdinalIgnoreCase)
     {
         { "youtube.com", "https://www.youtube.com/oembed?url={0}&format=json" },
@@ -29,19 +28,30 @@ public sealed class LinkPreviewService : ILinkPreviewService
     {
         ArgumentNullException.ThrowIfNull(url, nameof(url));
 
-        var uri = new Uri(url);
+        var normalizedUrl = NormalizeUrl(url);
+        var uri = new Uri(normalizedUrl);
         var host = uri.Host.Replace("www.", "");
 
-        // Try oEmbed first for known providers
         if (OEmbedProviders.TryGetValue(host, out var oEmbedEndpoint))
         {
-            var oEmbedResult = await TryOEmbedAsync(url, oEmbedEndpoint, cancellationToken).ConfigureAwait(false);
+            var oEmbedResult = await TryOEmbedAsync(normalizedUrl, oEmbedEndpoint, cancellationToken).ConfigureAwait(false);
             if (oEmbedResult is not null)
                 return oEmbedResult;
         }
 
-        // Fall back to OpenGraph
-        return await FetchOpenGraphAsync(url, uri, cancellationToken).ConfigureAwait(false);
+        return await FetchOpenGraphAsync(normalizedUrl, uri, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Expands youtu.be short URLs to full youtube.com/watch?v= format for reliable oEmbed.</summary>
+    private static string NormalizeUrl(string url)
+    {
+        var uri = new Uri(url);
+        if (uri.Host.Equals("youtu.be", StringComparison.OrdinalIgnoreCase) && uri.AbsolutePath.Length > 1)
+        {
+            var videoId = uri.AbsolutePath.TrimStart('/');
+            return $"https://www.youtube.com/watch?v={videoId}";
+        }
+        return url;
     }
 
     private async Task<LinkPreviewResponse?> TryOEmbedAsync(string url, string endpointTemplate, CancellationToken ct)
@@ -106,11 +116,9 @@ public sealed class LinkPreviewService : ILinkPreviewService
 
     private static string? GetMetaContent(HtmlDocument doc, string property)
     {
-        // Try og: property
         var node = doc.DocumentNode.SelectSingleNode($"//meta[@property='{property}']");
         if (node is not null) return node.GetAttributeValue("content", null);
 
-        // Try name attribute (for description, etc.)
         node = doc.DocumentNode.SelectSingleNode($"//meta[@name='{property}']");
         return node?.GetAttributeValue("content", null);
     }

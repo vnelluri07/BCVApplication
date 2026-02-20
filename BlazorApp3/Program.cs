@@ -41,4 +41,7 @@ builder.Services.AddScoped<ILinkPreviewApi, LinkPreviewApi>();
 builder.Services.AddScoped<UserController>();
 builder.Services.AddScoped<ScriptController>();
 
+// State
+builder.Services.AddScoped<BlazorApp3.Services.CreateScriptStateService>();
+
 await builder.Build().RunAsync();

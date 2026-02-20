@@ -1,6 +1,7 @@
 @page "/create"
 @using BeersCheersAndVasis.UI.Components.Pages.Script
 @using BeersCheersVasis.Api.Models.Script
+@using BlazorApp3.Services
 @using TinyMCE.Blazor
 @implements IDisposable
 
@@ -45,6 +46,7 @@
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private CreateScriptStateService State { get; set; } = default!;
 
     private string htmlContent = string.Empty;
     private string title = string.Empty;
@@ -81,6 +83,18 @@
         { "block_formats", "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Code=pre" }
     };
 
+    protected override void OnInitialized()
+    {
+        // Restore state from previous navigation
+        title = State.Title;
+        htmlContent = State.HtmlContent;
+        _scriptId = State.ScriptId;
+        UpdateWordCount();
+
+        if (_scriptId is not null)
+            saveStatusText = "Saved ✓";
+    }
+
     private async Task OpenEmbedDialog()
     {
         var dialog = await DialogService.ShowAsync<LinkPreviewDialog>("Embed Link",
@@ -89,7 +103,6 @@
 
         if (result is not null && !result.Canceled && result.Data is string cardHtml)
         {
-            // Insert the card HTML into TinyMCE at cursor position
             await JS.InvokeVoidAsync("tinymce.activeEditor.insertContent", cardHtml);
         }
     }
@@ -97,12 +110,20 @@
     private void OnContentChanged()
     {
         UpdateWordCount();
+        PersistState();
 
         if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(htmlContent))
             return;
 
         _debounceTimer?.Dispose();
         _debounceTimer = new Timer(async _ => await InvokeAsync(SaveAsync), null, DebounceMs, Timeout.Infinite);
+    }
+
+    private void PersistState()
+    {
+        State.Title = title;
+        State.HtmlContent = htmlContent;
+        State.ScriptId = _scriptId;
     }
 
     private void UpdateWordCount()
@@ -144,6 +165,7 @@
                 await Controller.UpdateScript(request);
             }
 
+            PersistState();
             _isSaving = false;
             saveStatusText = "Saved ✓";
         }
@@ -168,10 +190,16 @@
 
         var response = await Controller.CreateScript(request);
         Snackbar.Add($"Published: {response.Title}", Severity.Success);
+
+        // Clear state after publish
+        State.Title = string.Empty;
+        State.HtmlContent = string.Empty;
+        State.ScriptId = null;
     }
 
     public void Dispose()
     {
+        PersistState();
         _debounceTimer?.Dispose();
     }
 }

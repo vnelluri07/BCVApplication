@@ -8,7 +8,8 @@
     <DialogContent>
         <MudTextField T="string" @bind-Value="url" Label="Paste URL" Placeholder="https://..."
                       FullWidth="true" Immediate="true" Adornment="Adornment.End"
-                      AdornmentIcon="@Icons.Material.Filled.Search" OnAdornmentClick="FetchPreview" />
+                      AdornmentIcon="@Icons.Material.Filled.Search" OnAdornmentClick="FetchPreview"
+                      OnKeyDown="OnKeyDown" @onpaste="OnPaste" />
 
         @if (isLoading)
         {
@@ -43,11 +44,24 @@
 @code {
     [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = default!;
     [Inject] private ILinkPreviewApi LinkPreviewApi { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private string url = string.Empty;
     private LinkPreviewResponse? preview;
     private bool isLoading;
     private string? errorMessage;
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await FetchPreview();
+    }
+
+    private async Task OnPaste()
+    {
+        // Small delay to let the pasted value bind
+        await Task.Delay(150);
+        await FetchPreview();
+    }
 
     private async Task FetchPreview()
     {
@@ -78,12 +92,10 @@
         string html;
         if (!string.IsNullOrEmpty(preview.OEmbedHtml) && preview.Type == "video")
         {
-            // YouTube/Vimeo — wrap oEmbed iframe in responsive container
             html = $"""<div class="video-embed" contenteditable="false">{preview.OEmbedHtml}</div><p>&nbsp;</p>""";
         }
         else
         {
-            // Static card for websites/articles
             var imgHtml = string.IsNullOrEmpty(preview.ImageUrl)
                 ? ""
                 : $"""<img src="{preview.ImageUrl}" alt="{preview.Title}" />""";
