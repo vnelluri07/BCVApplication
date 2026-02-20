@@ -1,4 +1,4 @@
-﻿using BeersCheersAndVasis.UI.Data.Context;
+using BeersCheersAndVasis.UI.Data.Context;
 using BeersCheersAndVasis.UI.Data.Context.Implementation;
 using BeersCheersVasis.Repo;
 using BeersCheersVasis.Repo.UnitOfWork;
@@ -7,6 +7,7 @@ using BeersCheersVasis.Repository.Implementation;
 using BeersCheersVasis.Repository.UnitOfWork;
 using BeersCheersVasis.Services;
 using BeersCheersVasis.Services.Implementation;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace BeersCheersVasis.API.Internal;
@@ -28,5 +29,19 @@ public static class ApiConfigureApiService
         services.AddScoped<IUnitOfWork, BcvUnitOfWork>();
         services.AddScoped<IScriptService, ScriptService>();
         services.AddScoped<IScriptRepository, ScriptRepository>();
+
+        services.AddScoped<IImageService>(sp =>
+        {
+            var env = sp.GetRequiredService<IWebHostEnvironment>();
+            var path = Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "uploads", "images");
+            return new ImageService(path);
+        });
+
+        services.AddHttpClient("LinkPreview", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("BCVApp/1.0");
+        });
+        services.AddScoped<ILinkPreviewService, LinkPreviewService>();
     }
 }

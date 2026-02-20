@@ -1,4 +1,4 @@
-﻿using BeersCheersVasis.API.Internal;
+using BeersCheersVasis.API.Internal;
 using BeersCheersVasis.Services;
 using BeersCheersVasis.Services.Implementation;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -21,10 +21,7 @@ public class Startup
         services.ConfigureCors();
         services.AddSingleton<IApiAuthService, ApiAuthService>();
         services.AddSingleton<IBcvApiConfigurationService, BcvApiConfigurationService>();
-        //test
-        //var connectionString = _configuration.GetConnectionString("BcvDBConnection");
-        //services.AddDbContext<dbContext>(options => options.UseSqlServer(connectionString));
-        services.ConfigureApi(); 
+        services.ConfigureApi();
         services.ConfigureApiService();
         services.ConfigureSwagger();
         services.ConfigureBearerToken(_configuration);
@@ -32,6 +29,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IApiVersionDescriptionProvider provider)
     {
+        app.UseStaticFiles(); // Serve uploaded images from wwwroot
         app.UseRouting();
         //app.UseAuthentication();
         //app.UseAuthorization();

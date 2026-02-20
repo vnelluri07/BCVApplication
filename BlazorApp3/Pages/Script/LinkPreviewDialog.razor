@@ -1,0 +1,110 @@
+@using BeersCheersVasis.Api.Client
+@using BeersCheersVasis.Api.Models.LinkPreview
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Embed Link</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField T="string" @bind-Value="url" Label="Paste URL" Placeholder="https://..."
+                      FullWidth="true" Immediate="true" Adornment="Adornment.End"
+                      AdornmentIcon="@Icons.Material.Filled.Search" OnAdornmentClick="FetchPreview" />
+
+        @if (isLoading)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mt-4" />
+        }
+
+        @if (preview is not null)
+        {
+            <MudPaper Class="mt-4 pa-3" Outlined="true">
+                @if (!string.IsNullOrEmpty(preview.ImageUrl))
+                {
+                    <MudImage Src="@preview.ImageUrl" Alt="@preview.Title" ObjectFit="ObjectFit.Cover"
+                              Height="160" Class="rounded mb-2" Style="width:100%;" />
+                }
+                <MudText Typo="Typo.subtitle1">@preview.Title</MudText>
+                <MudText Typo="Typo.body2" Class="mt-1" Style="color:#555;">@preview.Description</MudText>
+                <MudText Typo="Typo.caption" Class="mt-1" Style="color:#888; text-transform:uppercase;">@preview.SiteName</MudText>
+            </MudPaper>
+        }
+
+        @if (errorMessage is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-3">@errorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Insert" Disabled="@(preview is null)">Insert</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private MudDialogInstance MudDialog { get; set; } = default!;
+    [Inject] private ILinkPreviewApi LinkPreviewApi { get; set; } = default!;
+
+    private string url = string.Empty;
+    private LinkPreviewResponse? preview;
+    private bool isLoading;
+    private string? errorMessage;
+
+    private async Task FetchPreview()
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+
+        isLoading = true;
+        errorMessage = null;
+        preview = null;
+
+        try
+        {
+            preview = await LinkPreviewApi.GetPreviewAsync(url);
+            if (string.IsNullOrEmpty(preview.Title) && string.IsNullOrEmpty(preview.OEmbedHtml))
+                errorMessage = "Could not fetch preview for this URL";
+        }
+        catch
+        {
+            errorMessage = "Failed to fetch link preview";
+        }
+
+        isLoading = false;
+    }
+
+    private void Insert()
+    {
+        if (preview is null) return;
+
+        string html;
+        if (!string.IsNullOrEmpty(preview.OEmbedHtml) && preview.Type == "video")
+        {
+            // YouTube/Vimeo — wrap oEmbed iframe in responsive container
+            html = $"""<div class="video-embed" contenteditable="false">{preview.OEmbedHtml}</div><p>&nbsp;</p>""";
+        }
+        else
+        {
+            // Static card for websites/articles
+            var imgHtml = string.IsNullOrEmpty(preview.ImageUrl)
+                ? ""
+                : $"""<img src="{preview.ImageUrl}" alt="{preview.Title}" />""";
+
+            html = $"""
+<div class="link-preview-card" contenteditable="false">
+  <a href="{preview.Url}" target="_blank" rel="noopener" style="display:flex; text-decoration:none; color:inherit;">
+    {imgHtml}
+    <div class="card-body">
+      <h4>{preview.Title}</h4>
+      <p>{preview.Description}</p>
+      <span class="site-name">{preview.SiteName}</span>
+    </div>
+  </a>
+</div>
+<p>&nbsp;</p>
+""";
+        }
+
+        MudDialog.Close(DialogResult.Ok(html));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

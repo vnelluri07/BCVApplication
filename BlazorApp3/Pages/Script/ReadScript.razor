@@ -1,3 +1,50 @@
-﻿@page "/readscript/{Id:long}"
+@page "/readscript/{Id:int}"
+@using BeersCheersAndVasis.UI.Components.Pages.Script
+@using BeersCheersVasis.Api.Client
 
-<h3>ReadScript</h3>
+<div class="read-container">
+    @if (isLoading)
+    {
+        <MudProgressCircular Indeterminate="true" Class="mt-8" />
+    }
+    else if (script is not null)
+    {
+        <MudText Typo="Typo.h4" Class="mb-4">@script.Title</MudText>
+        <MudPaper Class="pa-6 rounded" Elevation="1">
+            <div class="editor-rendered-content">
+                @((MarkupString)(script.Content ?? string.Empty))
+            </div>
+        </MudPaper>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Warning">Script not found.</MudAlert>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Inject] private IApiClient Api { get; set; } = default!;
+
+    private BeersCheersVasis.Api.Models.Script.ScriptResponse? script;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var scripts = await Api.ScriptApi.ListAsync();
+            script = scripts.FirstOrDefault(s => s.Id == Id);
+        }
+        catch { }
+        isLoading = false;
+    }
+}
+
+<style>
+    .read-container {
+        padding-top: 4em;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+</style>

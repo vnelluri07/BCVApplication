@@ -33,16 +33,12 @@ builder.Services.AddMudServices(config =>
 
 // API Client
 builder.Services.AddScoped<IApiClient, ApiClient>();
-//builder.Services.AddScoped<IAuthenticateApi, AuthenticateApi>();
 builder.Services.AddScoped<IUserApi, UserApi>();
 builder.Services.AddScoped<IScriptApi, ScriptApi>();
-
-// Local Services
-//builder.Services.AddScoped<IUserInfoService, UserInfoService>();
+builder.Services.AddScoped<ILinkPreviewApi, LinkPreviewApi>();
 
 // View Controllers
 builder.Services.AddScoped<UserController>();
 builder.Services.AddScoped<ScriptController>();
-
 
 await builder.Build().RunAsync();
