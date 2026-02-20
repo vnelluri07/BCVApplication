@@ -37,4 +37,11 @@ public class ScriptController : ControllerBase
         var result = await _scriptService.CreateScriptAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateScriptAsync(UpdateScriptRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _scriptService.UpdateScriptAsync(request, cancellationToken);
+        return Ok(result);
+    }
 }
