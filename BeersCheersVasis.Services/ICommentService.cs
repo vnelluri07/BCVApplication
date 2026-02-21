@@ -4,6 +4,7 @@ namespace BeersCheersVasis.Services;
 
 public interface ICommentService
 {
+    Task<IEnumerable<CommentResponse>> GetAllCommentsAsync(CancellationToken cancellationToken);
     Task<IEnumerable<CommentResponse>> GetCommentsByScriptAsync(int scriptId, CancellationToken cancellationToken);
     Task<CommentResponse> CreateCommentAsync(CreateCommentRequest request, CancellationToken cancellationToken);
     Task DeleteCommentAsync(int id, CancellationToken cancellationToken);

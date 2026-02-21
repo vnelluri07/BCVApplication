@@ -1,0 +1,119 @@
+@page "/read"
+@page "/read/{CategoryId:int}"
+@inject BeersCheersVasis.Api.Client.IScriptApi ScriptApi
+@inject BeersCheersVasis.Api.Client.ICategoryApi CategoryApi
+@inject NavigationManager Nav
+
+<PageTitle>@(_categoryName ?? "Read") — Beers Cheers & Vasis</PageTitle>
+
+<section class="bcv-section">
+    <div class="bcv-container">
+        <h1 class="bcv-text-center">@(_categoryName ?? "All Writing")</h1>
+        <p class="bcv-text-center bcv-text-muted bcv-mb-lg">
+            @if (_categoryName is not null)
+            {
+                <a href="/read" style="text-decoration: underline;">← All categories</a>
+            }
+        </p>
+
+        <!-- Search bar -->
+        <div style="max-width:400px; margin:0 auto var(--bcv-space-xl);">
+            <input @bind="_search" @bind:event="oninput" placeholder="Search by title..."
+                style="width:100%; padding:0.5rem 0.75rem; border:1px solid var(--bcv-border); font-family:var(--bcv-font-body); font-size:0.9rem;" />
+        </div>
+
+        @if (_scripts is null)
+        {
+            <div class="bcv-card-grid">
+                @for (var i = 0; i < 3; i++)
+                {
+                    <div class="bcv-card">
+                        <div class="bcv-card-body">
+                            <div class="bcv-skeleton bcv-skeleton-line" style="width:30%; margin-bottom:0.75rem;"></div>
+                            <div class="bcv-skeleton bcv-skeleton-title"></div>
+                            <div class="bcv-skeleton bcv-skeleton-line"></div>
+                            <div class="bcv-skeleton bcv-skeleton-line" style="width:70%"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (!FilteredScripts.Any())
+        {
+            <p class="bcv-text-center bcv-text-muted">
+                @(string.IsNullOrWhiteSpace(_search) ? "Nothing published yet. Check back soon." : "No scripts match your search.")
+            </p>
+        }
+        else
+        {
+            <div class="bcv-card-grid">
+                @foreach (var script in FilteredScripts)
+                {
+                    <div class="bcv-card" @onclick="() => GoToScript(script.Id)">
+                        <div class="bcv-card-body">
+                            @if (!string.IsNullOrEmpty(script.CategoryName))
+                            {
+                                <span class="bcv-badge bcv-mb-md" style="display:inline-block; margin-bottom:0.75rem;">@script.CategoryName</span>
+                            }
+                            <div class="bcv-card-title">@script.Title</div>
+                            <div class="bcv-card-excerpt">@GetExcerpt(script.Content)</div>
+                            <div class="bcv-card-meta">
+                                @(script.PublishedDate?.ToString("MMMM d, yyyy") ?? script.CreatedDate?.ToString("MMMM d, yyyy"))
+                                @if (script.CommentCount > 0)
+                                {
+                                    <span> · @script.CommentCount @(script.CommentCount == 1 ? "comment" : "comments")</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public int? CategoryId { get; set; }
+
+    private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse>? _scripts;
+    private string? _categoryName;
+    private string _search = "";
+
+    private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse> FilteredScripts =>
+        string.IsNullOrWhiteSpace(_search)
+            ? _scripts!
+            : _scripts!.Where(s => s.Title?.Contains(_search, StringComparison.OrdinalIgnoreCase) == true);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _scripts = null;
+        try
+        {
+            if (CategoryId.HasValue)
+            {
+                _scripts = await ScriptApi.GetPublishedAsync(CategoryId.Value);
+                var cat = await CategoryApi.GetAsync(CategoryId.Value);
+                _categoryName = cat?.Name;
+            }
+            else
+            {
+                _scripts = await ScriptApi.GetPublishedAsync();
+                _categoryName = null;
+            }
+        }
+        catch
+        {
+            _scripts = Enumerable.Empty<BeersCheersVasis.Api.Models.Script.ScriptResponse>();
+        }
+    }
+
+    private static string GetExcerpt(string? html)
+    {
+        if (string.IsNullOrEmpty(html)) return "";
+        var text = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
+        return text.Length > 160 ? text[..160] + "…" : text;
+    }
+
+    private void GoToScript(int id) => Nav.NavigateTo($"/read/script/{id}");
+}

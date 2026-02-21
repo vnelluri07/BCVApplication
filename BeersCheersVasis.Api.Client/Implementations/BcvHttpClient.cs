@@ -174,6 +174,14 @@ public class BcvHttpClient
         throw MatchStatusCode(response.StatusCode);
     }
 
+    public async Task PutAsync(string endpoint)
+    {
+        var http = await GetHttpClientAsync();
+        var response = await http.PutAsync(endpoint, null);
+        if (!response.IsSuccessStatusCode)
+            throw MatchStatusCode(response.StatusCode);
+    }
+
     public async Task DeleteAsync(string endpoint)
     {
         var http = await GetHttpClientAsync();

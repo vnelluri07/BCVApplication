@@ -11,6 +11,12 @@ public sealed class CommentApi : ICommentApi
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
+    public async Task<IEnumerable<CommentResponse>> GetAllAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<IEnumerable<CommentResponse>>("Comment/GetAll")
+            ?? Enumerable.Empty<CommentResponse>();
+    }
+
     public async Task<IEnumerable<CommentResponse>> GetByScriptAsync(int scriptId)
     {
         return await _httpClient.GetFromJsonAsync<IEnumerable<CommentResponse>>($"Comment/GetByScript/{scriptId}")

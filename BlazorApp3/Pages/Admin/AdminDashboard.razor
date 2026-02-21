@@ -1,0 +1,311 @@
+@page "/admin"
+@inject BeersCheersVasis.Api.Client.IScriptApi ScriptApi
+@inject BeersCheersVasis.Api.Client.ICategoryApi CategoryApi
+@inject BeersCheersVasis.Api.Client.ICommentApi CommentApi
+@inject NavigationManager Nav
+
+<PageTitle>Admin — Beers Cheers & Vasis</PageTitle>
+
+<section class="bcv-section">
+    <div class="bcv-container">
+        <h1>Dashboard</h1>
+
+        <!-- Tab bar -->
+        <div style="display:flex; gap:1.5rem; border-bottom:2px solid var(--bcv-border); margin-bottom:2rem;">
+            <button class="@TabClass("scripts")" @onclick='() => _tab = "scripts"'>Scripts</button>
+            <button class="@TabClass("categories")" @onclick='() => _tab = "categories"'>Categories</button>
+            <button class="@TabClass("comments")" @onclick='() => _tab = "comments"'>Comments (@_allComments.Count())</button>
+            <button class="@TabClass("settings")" @onclick='() => _tab = "settings"'>Settings</button>
+        </div>
+
+        @* ═══════════════ SCRIPTS TAB ═══════════════ *@
+        @if (_tab == "scripts")
+        {
+            <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
+                <input @bind="_scriptSearch" @bind:event="oninput" placeholder="Search scripts..."
+                    style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border); font-family:var(--bcv-font-body); flex:1; min-width:200px;" />
+            </div>
+            <div style="display:flex; gap:0.75rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+                <button class="@FilterClass("all")" @onclick='() => _filter = "all"'>All (@_allScripts.Count())</button>
+                <button class="@FilterClass("draft")" @onclick='() => _filter = "draft"'>Drafts (@_allScripts.Count(s => !s.IsPublished && !s.IsDeleted))</button>
+                <button class="@FilterClass("published")" @onclick='() => _filter = "published"'>Published (@_allScripts.Count(s => s.IsPublished))</button>
+                <button class="@FilterClass("deleted")" @onclick='() => _filter = "deleted"'>Deleted (@_allScripts.Count(s => s.IsDeleted))</button>
+            </div>
+
+            @if (!FilteredScripts.Any())
+            {
+                <p class="bcv-text-muted">No scripts match.</p>
+            }
+            else
+            {
+                <div class="bcv-admin-table-wrap">
+                    <table class="bcv-admin-table">
+                        <thead>
+                            <tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in FilteredScripts)
+                            {
+                                <tr>
+                                    <td>@s.Title</td>
+                                    <td>@(s.CategoryName ?? "—")</td>
+                                    <td>
+                                        @if (s.IsDeleted) { <span class="bcv-badge" style="background:#dc3545;color:#fff;">Deleted</span> }
+                                        else if (s.IsPublished) { <span class="bcv-badge" style="background:#198754;color:#fff;">Published</span> }
+                                        else { <span class="bcv-badge">Draft</span> }
+                                    </td>
+                                    <td style="white-space:nowrap;">@(s.ModifiedDate?.ToString("MMM d, yyyy") ?? s.CreatedDate?.ToString("MMM d, yyyy"))</td>
+                                    <td style="white-space:nowrap;">
+                                        @if (!s.IsDeleted)
+                                        {
+                                            @if (s.IsPublished)
+                                            {
+                                                <button class="bcv-btn-sm" @onclick="() => Unpublish(s.Id)">Unpublish</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="bcv-btn-sm" @onclick="() => Publish(s.Id)">Publish</button>
+                                            }
+                                            <button class="bcv-btn-sm" @onclick="() => GoToEdit(s.Id)">Edit</button>
+                                            <button class="bcv-btn-sm bcv-btn-danger" @onclick="() => Delete(s.Id)">Delete</button>
+
+                                            @if (_categories.Any())
+                                            {
+                                                <select value="@(s.CategoryId?.ToString() ?? "")" @onchange="e => AssignCategory(s.Id, e)">
+                                                    <option value="">No category</option>
+                                                    @foreach (var c in _categories)
+                                                    {
+                                                        <option value="@c.Id">@c.Name</option>
+                                                    }
+                                                </select>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+
+        @* ═══════════════ CATEGORIES TAB ═══════════════ *@
+        else if (_tab == "categories")
+        {
+            <div style="margin-bottom:1.5rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:end;">
+                <div>
+                    <label style="font-size:0.8rem; display:block;">Name</label>
+                    <input @bind="_catName" placeholder="Category name" style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border);" />
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; display:block;">Icon</label>
+                    <input @bind="_catIcon" placeholder="emoji" style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border); width:4rem;" />
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; display:block;">Description</label>
+                    <input @bind="_catDesc" placeholder="Optional" style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border);" />
+                </div>
+                <button class="bcv-btn" @onclick="SaveCategory">@(_editCatId.HasValue ? "Update" : "Add")</button>
+                @if (_editCatId.HasValue)
+                {
+                    <button class="bcv-btn-sm" @onclick="CancelCatEdit">Cancel</button>
+                }
+            </div>
+
+            @if (_categories.Any())
+            {
+                <table class="bcv-admin-table">
+                    <thead>
+                        <tr><th>Icon</th><th>Name</th><th>Description</th><th>Scripts</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in _categories)
+                        {
+                            <tr>
+                                <td>@c.Icon</td>
+                                <td>@c.Name</td>
+                                <td>@c.Description</td>
+                                <td>@c.ScriptCount</td>
+                                <td><button class="bcv-btn-sm" @onclick="() => EditCategory(c)">Edit</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+
+        @* ═══════════════ COMMENTS TAB ═══════════════ *@
+        else if (_tab == "comments")
+        {
+            @if (!_allComments.Any())
+            {
+                <p class="bcv-text-muted">No comments yet.</p>
+            }
+            else
+            {
+                <div class="bcv-admin-table-wrap">
+                    <table class="bcv-admin-table">
+                        <thead>
+                            <tr><th>Author</th><th>Comment</th><th>Script</th><th>Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in _allComments)
+                            {
+                                <tr>
+                                    <td style="white-space:nowrap;">
+                                        @c.AuthorDisplayName
+                                        @if (c.IsAnonymous) { <span class="bcv-badge" style="font-size:0.55rem;">anon</span> }
+                                    </td>
+                                    <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">@c.Content</td>
+                                    <td>
+                                        <a href="javascript:void(0)" @onclick="() => GoToScript(c.ScriptId)" style="text-decoration:underline;">
+                                            @(c.ScriptTitle ?? $"Script #{c.ScriptId}")
+                                        </a>
+                                    </td>
+                                    <td style="white-space:nowrap;">@c.CreatedDate?.ToString("MMM d, yyyy")</td>
+                                    <td>
+                                        <button class="bcv-btn-sm bcv-btn-danger" @onclick="() => DeleteComment(c.Id)">Delete</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+
+        @* ═══════════════ SETTINGS TAB ═══════════════ *@
+        else if (_tab == "settings")
+        {
+            <div style="max-width:500px;">
+                <h3 class="bcv-mb-md">Site Greeting</h3>
+                <p class="bcv-text-muted" style="font-size:0.85rem; margin-bottom:0.75rem;">
+                    This text appears on the landing page hero section.
+                </p>
+                <textarea @bind="_greeting" rows="3" class="bcv-textarea"></textarea>
+                <button class="bcv-btn bcv-mt-sm" @onclick="SaveGreeting">Save Greeting</button>
+                @if (_greetingSaved)
+                {
+                    <span style="color:var(--bcv-success); font-size:0.85rem; margin-left:0.5rem;">✓ Saved</span>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private string _tab = "scripts";
+    private string _filter = "all";
+    private string _scriptSearch = "";
+
+    private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse> _allScripts = Enumerable.Empty<BeersCheersVasis.Api.Models.Script.ScriptResponse>();
+    private IEnumerable<BeersCheersVasis.Api.Models.Category.CategoryResponse> _categories = Enumerable.Empty<BeersCheersVasis.Api.Models.Category.CategoryResponse>();
+    private IEnumerable<BeersCheersVasis.Api.Models.Comment.CommentResponse> _allComments = Enumerable.Empty<BeersCheersVasis.Api.Models.Comment.CommentResponse>();
+
+    // Category form
+    private int? _editCatId;
+    private string _catName = "", _catIcon = "", _catDesc = "";
+
+    // Settings
+    private string _greeting = "";
+    private bool _greetingSaved;
+
+    private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse> FilteredScripts
+    {
+        get
+        {
+            var scripts = _filter switch
+            {
+                "draft" => _allScripts.Where(s => !s.IsPublished && !s.IsDeleted),
+                "published" => _allScripts.Where(s => s.IsPublished),
+                "deleted" => _allScripts.Where(s => s.IsDeleted),
+                _ => _allScripts
+            };
+            if (!string.IsNullOrWhiteSpace(_scriptSearch))
+                scripts = scripts.Where(s => s.Title?.Contains(_scriptSearch, StringComparison.OrdinalIgnoreCase) == true);
+            return scripts;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+        _greeting = await GetGreetingFromStorage();
+    }
+
+    private async Task Reload()
+    {
+        try { _allScripts = await ScriptApi.ListAsync(); } catch { }
+        try { _categories = await CategoryApi.ListAsync(); } catch { }
+        try { _allComments = await CommentApi.GetAllAsync(); } catch { }
+    }
+
+    // Script actions
+    private async Task Publish(int id) { try { await ScriptApi.PublishAsync(id); await Reload(); } catch { } }
+    private async Task Unpublish(int id) { try { await ScriptApi.UnpublishAsync(id); await Reload(); } catch { } }
+    private async Task Delete(int id) { try { await ScriptApi.SoftDeleteAsync(id); await Reload(); } catch { } }
+
+    private async Task AssignCategory(int scriptId, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var catId))
+        {
+            try { await ScriptApi.SetCategoryAsync(scriptId, catId); await Reload(); } catch { }
+        }
+    }
+
+    // Comment actions
+    private async Task DeleteComment(int id)
+    {
+        try { await CommentApi.DeleteAsync(id); await Reload(); } catch { }
+    }
+
+    // Category CRUD
+    private void EditCategory(BeersCheersVasis.Api.Models.Category.CategoryResponse c)
+    {
+        _editCatId = c.Id; _catName = c.Name; _catIcon = c.Icon ?? ""; _catDesc = c.Description ?? "";
+    }
+
+    private void CancelCatEdit() { _editCatId = null; _catName = _catIcon = _catDesc = ""; }
+
+    private async Task SaveCategory()
+    {
+        if (string.IsNullOrWhiteSpace(_catName)) return;
+        try
+        {
+            if (_editCatId.HasValue)
+                await CategoryApi.UpdateAsync(new() { Id = _editCatId.Value, Name = _catName, Icon = _catIcon, Description = _catDesc, IsActive = true });
+            else
+                await CategoryApi.CreateAsync(new() { Name = _catName, Icon = _catIcon, Description = _catDesc });
+            CancelCatEdit();
+            await Reload();
+        }
+        catch { }
+    }
+
+    // Settings — greeting stored in localStorage (no extra API needed)
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private async Task<string> GetGreetingFromStorage()
+    {
+        try { return await JS.InvokeAsync<string>("localStorage.getItem", "bcv_greeting") ?? ""; }
+        catch { return ""; }
+    }
+
+    private async Task SaveGreeting()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "bcv_greeting", _greeting);
+            _greetingSaved = true;
+            _ = Task.Delay(2000).ContinueWith(_ => { _greetingSaved = false; InvokeAsync(StateHasChanged); });
+        }
+        catch { }
+    }
+
+    // Navigation helpers
+    private void GoToEdit(int id) => Nav.NavigateTo($"/create?id={id}");
+    private void GoToScript(int id) => Nav.NavigateTo($"/read/script/{id}");
+
+    private string TabClass(string tab) => $"bcv-tab-btn{(_tab == tab ? " bcv-tab-active" : "")}";
+    private string FilterClass(string f) => $"bcv-btn-sm{(_filter == f ? " bcv-btn-active" : "")}";
+}

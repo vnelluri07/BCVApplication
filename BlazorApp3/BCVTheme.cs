@@ -1,4 +1,4 @@
-﻿namespace BlazorApp3
+namespace BlazorApp3
 {
     public class BCVTheme
     {
@@ -6,26 +6,30 @@
         {
             Palette = new PaletteLight()
             {
-                Primary = "#FB5062", // Pursian Blue
-                PrimaryContrastText = "#f2f2f2", // Air Force Blue
-                Dark = "#f2f2f2", // Reversed this since there is no Light. need it to make the links white.
-                AppbarText = Colors.Shades.White,
-                Secondary = "#C2A140", // want burguendy
-                AppbarBackground = "#588390",
-                Black = "#444444",
-                TextPrimary = "#444444",
-                Background = "#f2f2f2",
-                Surface = "#fefefe",
-                Success = "#28a745",
-                Info = "#cccccc"
-
+                Primary = "#1a1a1a",
+                PrimaryContrastText = "#ffffff",
+                Secondary = "#6b6b6b",
+                AppbarText = "#1a1a1a",
+                AppbarBackground = "rgba(255,255,255,0.95)",
+                Black = "#1a1a1a",
+                TextPrimary = "#1a1a1a",
+                TextSecondary = "#6b6b6b",
+                Background = "#ffffff",
+                Surface = "#ffffff",
+                Success = "#2d8a4e",
+                Error = "#c0392b",
+                Info = "#999999"
             },
             Typography = new Typography()
             {
                 Default = new Default()
                 {
-                    FontFamily = new[] { "Courier New", "Helvetica", "Arial", "sans-serif" }
-                }
+                    FontFamily = new[] { "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif" }
+                },
+                H1 = new H1() { FontFamily = new[] { "Playfair Display", "Georgia", "serif" } },
+                H2 = new H2() { FontFamily = new[] { "Playfair Display", "Georgia", "serif" } },
+                H3 = new H3() { FontFamily = new[] { "Playfair Display", "Georgia", "serif" } },
+                H4 = new H4() { FontFamily = new[] { "Playfair Display", "Georgia", "serif" } }
             },
             LayoutProperties = new LayoutProperties { }
         };

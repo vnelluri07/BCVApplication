@@ -16,6 +16,11 @@ public sealed class CommentService : ICommentService
         _nameGenerator = nameGenerator;
     }
 
+    public async Task<IEnumerable<CommentResponse>> GetAllCommentsAsync(CancellationToken cancellationToken)
+    {
+        return await _commentRepository.GetAllCommentsAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<CommentResponse>> GetCommentsByScriptAsync(int scriptId, CancellationToken cancellationToken)
     {
         return await _commentRepository.GetCommentsByScriptAsync(scriptId, cancellationToken);

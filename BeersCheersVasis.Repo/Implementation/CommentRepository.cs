@@ -16,6 +16,31 @@ public sealed class CommentRepository : ICommentRepository
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<IEnumerable<CommentResponse>> GetAllCommentsAsync(CancellationToken cancellationToken)
+    {
+        return await _dbContext.Comments
+            .Include(c => c.AppUser)
+            .Include(c => c.Script)
+            .Where(c => !c.IsDeleted)
+            .OrderByDescending(c => c.CreatedDate)
+            .Select(c => new CommentResponse
+            {
+                Id = c.Id,
+                ScriptId = c.ScriptId,
+                AppUserId = c.AppUserId,
+                AuthorDisplayName = c.AppUser.DisplayName,
+                AuthorAvatarUrl = c.AppUser.AvatarUrl,
+                IsAnonymous = c.AppUser.IsAnonymous,
+                ParentCommentId = c.ParentCommentId,
+                Content = c.Content,
+                IsDeleted = c.IsDeleted,
+                CreatedDate = c.CreatedDate,
+                ModifiedDate = c.ModifiedDate,
+                ScriptTitle = c.Script.Title
+            })
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<CommentResponse>> GetCommentsByScriptAsync(int scriptId, CancellationToken cancellationToken)
     {
         var comments = await _dbContext.Comments

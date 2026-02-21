@@ -1,0 +1,47 @@
+@using BeersCheersVasis.Api.Models.Comment
+
+<div class="bcv-comment" style="padding-left: @(Depth * 24)px;">
+    <div class="bcv-comment-header">
+        @if (!string.IsNullOrEmpty(Comment.AuthorAvatarUrl))
+        {
+            <img src="@Comment.AuthorAvatarUrl" alt="" class="bcv-comment-avatar" />
+        }
+        else
+        {
+            <span class="bcv-comment-avatar-placeholder">@(Comment.AuthorDisplayName?[..1] ?? "?")</span>
+        }
+        <span class="bcv-comment-author">@Comment.AuthorDisplayName</span>
+        @if (Comment.IsAnonymous)
+        {
+            <span class="bcv-badge" style="font-size:0.55rem; padding:0.1rem 0.35rem;">pen name</span>
+        }
+        <span class="bcv-comment-date">@Comment.CreatedDate?.ToString("MMM d, yyyy")</span>
+    </div>
+
+    @if (Comment.IsDeleted)
+    {
+        <p class="bcv-comment-body bcv-text-muted" style="font-style:italic;">@Comment.Content</p>
+    }
+    else
+    {
+        <p class="bcv-comment-body">@Comment.Content</p>
+        @if (Depth < 3)
+        {
+            <button class="bcv-btn-link" @onclick="() => OnReply.InvokeAsync(Comment.Id)">Reply</button>
+        }
+    }
+
+    @if (Comment.Replies?.Any() == true)
+    {
+        @foreach (var reply in Comment.Replies)
+        {
+            <CommentThread Comment="reply" Depth="Depth + 1" OnReply="OnReply" />
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public CommentResponse Comment { get; set; } = new();
+    [Parameter] public int Depth { get; set; }
+    [Parameter] public EventCallback<int> OnReply { get; set; }
+}

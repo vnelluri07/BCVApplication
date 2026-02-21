@@ -15,6 +15,13 @@ public class CommentController : ControllerBase
         _commentService = commentService;
     }
 
+    [HttpGet("GetAll")]
+    public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var result = await _commentService.GetAllCommentsAsync(cancellationToken);
+        return Ok(result);
+    }
+
     [HttpGet("GetByScript/{scriptId}")]
     public async Task<IActionResult> GetByScriptAsync(int scriptId, CancellationToken cancellationToken)
     {

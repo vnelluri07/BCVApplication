@@ -14,4 +14,5 @@ public sealed class CommentResponse
     public DateTime? CreatedDate { get; set; }
     public DateTime? ModifiedDate { get; set; }
     public List<CommentResponse> Replies { get; set; } = new();
+    public string? ScriptTitle { get; set; }
 }

@@ -1,0 +1,725 @@
+/* ============================================
+   BCV Design System — Squarespace-inspired
+   ============================================ */
+
+:root {
+    /* Color palette — warm, muted, editorial */
+    --bcv-bg: #ffffff;
+    --bcv-bg-alt: #f8f7f4;
+    --bcv-bg-warm: #faf9f6;
+    --bcv-text: #1a1a1a;
+    --bcv-text-muted: #6b6b6b;
+    --bcv-text-light: #999999;
+    --bcv-accent: #2d2d2d;
+    --bcv-accent-hover: #000000;
+    --bcv-border: #e8e6e1;
+    --bcv-border-light: #f0eeea;
+    --bcv-link: #1a1a1a;
+    --bcv-link-hover: #555555;
+    --bcv-success: #2d8a4e;
+    --bcv-danger: #c0392b;
+    --bcv-badge-bg: #f0eeea;
+    --bcv-badge-text: #555555;
+    --bcv-card-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    --bcv-card-shadow-hover: 0 4px 20px rgba(0,0,0,0.08);
+
+    /* Typography */
+    --bcv-font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --bcv-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --bcv-font-mono: 'Courier New', Courier, monospace;
+
+    /* Spacing */
+    --bcv-space-xs: 0.25rem;
+    --bcv-space-sm: 0.5rem;
+    --bcv-space-md: 1rem;
+    --bcv-space-lg: 2rem;
+    --bcv-space-xl: 3rem;
+    --bcv-space-2xl: 5rem;
+    --bcv-space-3xl: 8rem;
+
+    /* Layout */
+    --bcv-max-width: 1200px;
+    --bcv-content-width: 720px;
+    --bcv-nav-height: 64px;
+
+    /* Transitions */
+    --bcv-transition: 0.2s ease;
+}
+
+/* ============================================
+   Base Reset & Typography
+   ============================================ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--bcv-font-body);
+    color: var(--bcv-text);
+    background: var(--bcv-bg);
+    line-height: 1.7;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--bcv-font-display);
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 var(--bcv-space-md) 0;
+    color: var(--bcv-text);
+}
+
+h1 { font-size: 2.75rem; letter-spacing: -0.02em; }
+h2 { font-size: 2rem; letter-spacing: -0.01em; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+p {
+    margin: 0 0 var(--bcv-space-md) 0;
+    color: var(--bcv-text);
+}
+
+a {
+    color: var(--bcv-link);
+    text-decoration: none;
+    transition: color var(--bcv-transition);
+}
+
+a:hover {
+    color: var(--bcv-link-hover);
+}
+
+/* ============================================
+   Layout Containers
+   ============================================ */
+
+.bcv-container {
+    max-width: var(--bcv-max-width);
+    margin: 0 auto;
+    padding: 0 var(--bcv-space-lg);
+}
+
+.bcv-content {
+    max-width: var(--bcv-content-width);
+    margin: 0 auto;
+}
+
+.bcv-section {
+    padding: var(--bcv-space-2xl) 0;
+}
+
+.bcv-section-alt {
+    padding: var(--bcv-space-2xl) 0;
+    background: var(--bcv-bg-alt);
+}
+
+/* ============================================
+   Navigation
+   ============================================ */
+
+.bcv-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--bcv-nav-height);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--bcv-border-light);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+.bcv-nav-inner {
+    max-width: var(--bcv-max-width);
+    margin: 0 auto;
+    padding: 0 var(--bcv-space-lg);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bcv-nav-brand {
+    font-family: var(--bcv-font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--bcv-text);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+.bcv-nav-brand:hover {
+    color: var(--bcv-text);
+}
+
+.bcv-nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--bcv-space-lg);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bcv-nav-links a {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--bcv-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    transition: color var(--bcv-transition);
+}
+
+.bcv-nav-links a:hover,
+.bcv-nav-links a.active {
+    color: var(--bcv-text);
+}
+
+.bcv-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid var(--bcv-text);
+    color: var(--bcv-text);
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--bcv-transition);
+}
+
+.bcv-nav-btn:hover {
+    background: var(--bcv-text);
+    color: var(--bcv-bg);
+}
+
+/* Mobile nav toggle */
+.bcv-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--bcv-space-sm);
+}
+
+.bcv-nav-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--bcv-text);
+    margin: 5px 0;
+    transition: all var(--bcv-transition);
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+
+.bcv-card {
+    background: var(--bcv-bg);
+    border: 1px solid var(--bcv-border);
+    border-radius: 2px;
+    overflow: hidden;
+    transition: box-shadow var(--bcv-transition), transform var(--bcv-transition);
+    cursor: pointer;
+}
+
+.bcv-card:hover {
+    box-shadow: var(--bcv-card-shadow-hover);
+    transform: translateY(-2px);
+}
+
+.bcv-card-body {
+    padding: var(--bcv-space-lg);
+}
+
+.bcv-card-title {
+    font-family: var(--bcv-font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: var(--bcv-space-sm);
+    line-height: 1.3;
+}
+
+.bcv-card-excerpt {
+    color: var(--bcv-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: var(--bcv-space-md);
+}
+
+.bcv-card-meta {
+    font-size: 0.8rem;
+    color: var(--bcv-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Card grid */
+.bcv-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--bcv-space-lg);
+}
+
+/* ============================================
+   Category badges
+   ============================================ */
+
+.bcv-badge {
+    display: inline-block;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: var(--bcv-badge-bg);
+    color: var(--bcv-badge-text);
+    border-radius: 2px;
+}
+
+/* ============================================
+   Category browser (landing page)
+   ============================================ */
+
+.bcv-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--bcv-space-md);
+}
+
+.bcv-category-card {
+    padding: var(--bcv-space-xl) var(--bcv-space-lg);
+    text-align: center;
+    border: 1px solid var(--bcv-border);
+    background: var(--bcv-bg);
+    cursor: pointer;
+    transition: all var(--bcv-transition);
+}
+
+.bcv-category-card:hover {
+    border-color: var(--bcv-text);
+    background: var(--bcv-bg-warm);
+}
+
+.bcv-category-icon {
+    font-size: 2rem;
+    margin-bottom: var(--bcv-space-sm);
+}
+
+.bcv-category-name {
+    font-family: var(--bcv-font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: var(--bcv-space-xs);
+}
+
+.bcv-category-count {
+    font-size: 0.8rem;
+    color: var(--bcv-text-light);
+}
+
+/* ============================================
+   Hero / Greeting section
+   ============================================ */
+
+.bcv-hero {
+    padding: var(--bcv-space-3xl) 0 var(--bcv-space-2xl);
+    text-align: center;
+}
+
+.bcv-hero h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: var(--bcv-space-md);
+    letter-spacing: -0.03em;
+}
+
+.bcv-hero p {
+    font-size: 1.2rem;
+    color: var(--bcv-text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.8;
+}
+
+/* ============================================
+   Article / ReadScript page
+   ============================================ */
+
+.bcv-article {
+    max-width: var(--bcv-content-width);
+    margin: 0 auto;
+    padding: var(--bcv-space-2xl) var(--bcv-space-lg);
+}
+
+.bcv-article-header {
+    text-align: center;
+    margin-bottom: var(--bcv-space-xl);
+    padding-bottom: var(--bcv-space-xl);
+    border-bottom: 1px solid var(--bcv-border);
+}
+
+.bcv-article-header h1 {
+    font-size: 2.75rem;
+    margin-bottom: var(--bcv-space-md);
+}
+
+.bcv-article-meta {
+    font-size: 0.85rem;
+    color: var(--bcv-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.bcv-article-body {
+    font-size: 1.125rem;
+    line-height: 1.85;
+}
+
+.bcv-article-body p {
+    margin-bottom: 1.5em;
+}
+
+/* ============================================
+   Admin table
+   ============================================ */
+
+.bcv-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bcv-admin-table th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bcv-text-muted);
+    padding: var(--bcv-space-sm) var(--bcv-space-md);
+    border-bottom: 2px solid var(--bcv-border);
+    text-align: left;
+}
+
+.bcv-admin-table td {
+    padding: var(--bcv-space-md);
+    border-bottom: 1px solid var(--bcv-border-light);
+    font-size: 0.95rem;
+}
+
+.bcv-admin-table tr:hover td {
+    background: var(--bcv-bg-warm);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+.bcv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    font-family: var(--bcv-font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid var(--bcv-text);
+    color: var(--bcv-text);
+    background: transparent;
+    cursor: pointer;
+    transition: all var(--bcv-transition);
+    text-decoration: none;
+}
+
+.bcv-btn:hover {
+    background: var(--bcv-text);
+    color: var(--bcv-bg);
+}
+
+.bcv-btn-sm {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.7rem;
+}
+
+.bcv-btn-danger {
+    border-color: var(--bcv-danger);
+    color: var(--bcv-danger);
+}
+
+.bcv-btn-danger:hover {
+    background: var(--bcv-danger);
+    color: white;
+}
+
+.bcv-btn-success {
+    border-color: var(--bcv-success);
+    color: var(--bcv-success);
+}
+
+.bcv-btn-success:hover {
+    background: var(--bcv-success);
+    color: white;
+}
+
+/* ============================================
+   Utilities
+   ============================================ */
+
+.bcv-text-center { text-align: center; }
+.bcv-text-muted { color: var(--bcv-text-muted); }
+.bcv-mt-sm { margin-top: var(--bcv-space-sm); }
+.bcv-mt-md { margin-top: var(--bcv-space-md); }
+.bcv-mt-lg { margin-top: var(--bcv-space-lg); }
+.bcv-mt-xl { margin-top: var(--bcv-space-xl); }
+.bcv-mb-md { margin-bottom: var(--bcv-space-md); }
+.bcv-mb-lg { margin-bottom: var(--bcv-space-lg); }
+.bcv-pt-nav { padding-top: var(--bcv-nav-height); }
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+    :root {
+        --bcv-nav-height: 56px;
+    }
+
+    .bcv-hero h1 { font-size: 2.25rem; }
+    .bcv-article-header h1 { font-size: 2rem; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+
+    .bcv-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bcv-category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bcv-nav-links {
+        display: none;
+    }
+
+    .bcv-nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: var(--bcv-nav-height);
+        left: 0;
+        right: 0;
+        background: var(--bcv-bg);
+        padding: var(--bcv-space-lg);
+        border-bottom: 1px solid var(--bcv-border);
+        gap: var(--bcv-space-md);
+    }
+
+    .bcv-nav-toggle {
+        display: block;
+    }
+
+    .bcv-container {
+        padding: 0 var(--bcv-space-md);
+    }
+}
+
+/* ============================================
+   Admin Utilities
+   ============================================ */
+
+.bcv-tab-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem 0;
+    font-family: var(--bcv-font-body);
+    font-size: 0.9rem;
+    color: var(--bcv-text-light);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.bcv-tab-btn:hover { color: var(--bcv-text); }
+
+.bcv-tab-active {
+    color: var(--bcv-text);
+    border-bottom-color: var(--bcv-text);
+    font-weight: 600;
+}
+
+.bcv-btn-active {
+    background: var(--bcv-text);
+    color: var(--bcv-bg) !important;
+}
+
+.bcv-admin-table-wrap {
+    overflow-x: auto;
+}
+
+.bcv-admin-table select {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--bcv-border);
+    font-family: var(--bcv-font-body);
+}
+
+/* ============================================
+   Loading Skeletons
+   ============================================ */
+
+@keyframes bcv-shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+.bcv-skeleton {
+    background: linear-gradient(90deg, var(--bcv-border-light) 25%, var(--bcv-border) 50%, var(--bcv-border-light) 75%);
+    background-size: 200px 100%;
+    animation: bcv-shimmer 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+.bcv-skeleton-title {
+    height: 1.5rem;
+    width: 70%;
+    margin-bottom: 1rem;
+}
+
+.bcv-skeleton-line {
+    height: 0.85rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   Card Hover & Transitions
+   ============================================ */
+
+.bcv-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.bcv-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.bcv-category-card {
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.bcv-category-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--bcv-text);
+}
+
+/* ============================================
+   Comment Styles
+   ============================================ */
+
+.bcv-comment {
+    margin-bottom: 1.25rem;
+}
+
+.bcv-comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.bcv-comment-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.bcv-comment-avatar-placeholder {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bcv-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--bcv-text-light);
+}
+
+.bcv-comment-author {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.bcv-comment-date {
+    font-size: 0.8rem;
+    color: var(--bcv-text-light);
+}
+
+.bcv-comment-body {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.bcv-btn-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8rem;
+    color: var(--bcv-text-light);
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: var(--bcv-font-body);
+    margin-top: 0.25rem;
+}
+
+.bcv-btn-link:hover {
+    color: var(--bcv-text);
+}
+
+/* ============================================
+   Form Elements
+   ============================================ */
+
+.bcv-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--bcv-border);
+    font-family: var(--bcv-font-body);
+    font-size: 0.95rem;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.bcv-textarea:focus {
+    outline: none;
+    border-color: var(--bcv-text);
+}
+
+/* ============================================
+   Content Width
+   ============================================ */
+
+.bcv-content {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 var(--bcv-space-lg);
+}

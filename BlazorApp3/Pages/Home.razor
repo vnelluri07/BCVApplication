@@ -1,7 +1,79 @@
-﻿@page "/home"
+@page "/"
+@page "/home"
+@inject BeersCheersVasis.Api.Client.ICategoryApi CategoryApi
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Beers Cheers & Vasis</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero / Greeting -->
+<section class="bcv-hero">
+    <div class="bcv-container">
+        <h1>Beers, Cheers & Vasis</h1>
+        <p>@_greeting</p>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Category Browser -->
+<section class="bcv-section-alt">
+    <div class="bcv-container">
+        <h2 class="bcv-text-center bcv-mb-lg">Explore</h2>
+
+        @if (_categories is null)
+        {
+            <div class="bcv-category-grid">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <div class="bcv-category-card">
+                        <div class="bcv-skeleton" style="width:2rem;height:2rem;border-radius:50%;margin:0 auto 0.5rem;"></div>
+                        <div class="bcv-skeleton bcv-skeleton-line" style="width:60%;margin:0 auto;"></div>
+                    </div>
+                }
+            </div>
+        }
+        else if (!_categories.Any())
+        {
+            <p class="bcv-text-center bcv-text-muted">Nothing here yet. Check back soon.</p>
+        }
+        else
+        {
+            <div class="bcv-category-grid">
+                @foreach (var cat in _categories.Where(c => c.IsActive))
+                {
+                    <div class="bcv-category-card" @onclick="() => GoToCategory(cat.Id)">
+                        <div class="bcv-category-icon">@(cat.Icon ?? "📝")</div>
+                        <div class="bcv-category-name">@cat.Name</div>
+                        <div class="bcv-category-count">@cat.ScriptCount @(cat.ScriptCount == 1 ? "piece" : "pieces")</div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Browse All CTA -->
+<section class="bcv-section">
+    <div class="bcv-container bcv-text-center">
+        <a href="/read" class="bcv-btn">Browse All Writing</a>
+    </div>
+</section>
+
+@code {
+    private IEnumerable<BeersCheersVasis.Api.Models.Category.CategoryResponse>? _categories;
+    private string _greeting = "Stories, thoughts, and everything in between — written with a cold beer and warm heart.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var stored = await JS.InvokeAsync<string>("localStorage.getItem", "bcv_greeting");
+            if (!string.IsNullOrWhiteSpace(stored)) _greeting = stored;
+        }
+        catch { }
+
+        try { _categories = await CategoryApi.ListAsync(); }
+        catch { _categories = Enumerable.Empty<BeersCheersVasis.Api.Models.Category.CategoryResponse>(); }
+    }
+
+    private void GoToCategory(int id) => Nav.NavigateTo($"/read/{id}");
+}

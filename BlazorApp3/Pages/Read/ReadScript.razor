@@ -1,0 +1,144 @@
+@page "/read/script/{Id:int}"
+@inject BeersCheersVasis.Api.Client.IScriptApi ScriptApi
+@inject BeersCheersVasis.Api.Client.ICommentApi CommentApi
+
+<PageTitle>@(_script?.Title ?? "Reading") — Beers Cheers & Vasis</PageTitle>
+
+@if (_loading)
+{
+    <div class="bcv-article">
+        <div class="bcv-skeleton bcv-skeleton-title"></div>
+        <div class="bcv-skeleton bcv-skeleton-line"></div>
+        <div class="bcv-skeleton bcv-skeleton-line" style="width:80%"></div>
+        <div class="bcv-skeleton bcv-skeleton-line" style="width:60%"></div>
+    </div>
+}
+else if (_script is null)
+{
+    <div class="bcv-article bcv-text-center bcv-text-muted">Script not found.</div>
+}
+else
+{
+    <article class="bcv-article">
+        <header class="bcv-article-header">
+            @if (!string.IsNullOrEmpty(_script.CategoryName))
+            {
+                <span class="bcv-badge bcv-mb-md" style="display:inline-block; margin-bottom:1rem;">@_script.CategoryName</span>
+            }
+            <h1>@_script.Title</h1>
+            <div class="bcv-article-meta">
+                @(_script.PublishedDate?.ToString("MMMM d, yyyy") ?? _script.CreatedDate?.ToString("MMMM d, yyyy"))
+            </div>
+        </header>
+
+        <div class="bcv-article-body editor-rendered-content">
+            @((MarkupString)(_script.Content ?? ""))
+        </div>
+    </article>
+
+    <!-- Comments Section -->
+    <section class="bcv-section-alt">
+        <div class="bcv-content">
+            <h3 class="bcv-mb-lg">Comments (@(_comments?.Count() ?? 0))</h3>
+
+            @if (_comments?.Any() == true)
+            {
+                @foreach (var comment in _comments)
+                {
+                    <CommentThread Comment="comment" OnReply="HandleReply" />
+                }
+            }
+            else
+            {
+                <p class="bcv-text-muted">No comments yet. Be the first to share your thoughts.</p>
+            }
+
+            <!-- Comment form -->
+            <div class="bcv-comment-form" style="border-top: 1px solid var(--bcv-border); padding-top: var(--bcv-space-lg); margin-top: var(--bcv-space-xl);">
+                @if (_replyingTo.HasValue)
+                {
+                    <div style="font-size:0.85rem; color:var(--bcv-text-light); margin-bottom:0.5rem;">
+                        Replying to a comment · <a href="javascript:void(0)" @onclick="CancelReply" style="text-decoration:underline;">Cancel</a>
+                    </div>
+                }
+                <h4>@(_replyingTo.HasValue ? "Write a reply" : "Leave a comment")</h4>
+                <p style="font-size:0.85rem; color:var(--bcv-text-light); margin-bottom:0.75rem;">
+                    You'll be given a random pen name — no login required.
+                </p>
+                <textarea @bind="_newComment" rows="3" placeholder="Share your thoughts..."
+                    class="bcv-textarea"></textarea>
+                @if (!string.IsNullOrEmpty(_commentError))
+                {
+                    <p style="color:var(--bcv-danger); font-size:0.85rem; margin-top:0.25rem;">@_commentError</p>
+                }
+                <button class="bcv-btn bcv-mt-sm" @onclick="PostComment" disabled="@_posting">
+                    @(_posting ? "Posting..." : "Post Comment")
+                </button>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private BeersCheersVasis.Api.Models.Script.ScriptResponse? _script;
+    private IEnumerable<BeersCheersVasis.Api.Models.Comment.CommentResponse>? _comments;
+    private string _newComment = "";
+    private string _commentError = "";
+    private bool _loading = true;
+    private bool _posting;
+    private int? _replyingTo;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        try
+        {
+            _script = await ScriptApi.GetAsync(Id);
+            _comments = await CommentApi.GetByScriptAsync(Id);
+        }
+        catch { }
+        _loading = false;
+    }
+
+    private void HandleReply(int commentId)
+    {
+        _replyingTo = commentId;
+        StateHasChanged();
+    }
+
+    private void CancelReply()
+    {
+        _replyingTo = null;
+    }
+
+    private async Task PostComment()
+    {
+        _commentError = "";
+        if (string.IsNullOrWhiteSpace(_newComment))
+        {
+            _commentError = "Please write something before posting.";
+            return;
+        }
+
+        _posting = true;
+        try
+        {
+            await CommentApi.CreateAsync(new BeersCheersVasis.Api.Models.Comment.CreateCommentRequest
+            {
+                ScriptId = Id,
+                ParentCommentId = _replyingTo,
+                Content = _newComment.Trim()
+            });
+            _newComment = "";
+            _replyingTo = null;
+            _comments = await CommentApi.GetByScriptAsync(Id);
+        }
+        catch
+        {
+            _commentError = "Failed to post comment. Please try again.";
+        }
+        _posting = false;
+    }
+}
