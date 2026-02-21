@@ -1,0 +1,37 @@
+@inject IJSRuntime JS
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
+
+<div id="@_elementId"></div>
+
+@code {
+    [Parameter] public EventCallback<string> OnVerified { get; set; }
+
+    private string _elementId = $"turnstile-{Guid.NewGuid():N}";
+    private int? _widgetId;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var siteKey = Config["CloudflareTurnstile:SiteKey"];
+            _widgetId = await JS.InvokeAsync<int>("bcvRenderTurnstile", _elementId, siteKey);
+        }
+    }
+
+    public async Task<string?> GetResponseAsync()
+    {
+        if (_widgetId is null) return null;
+        try
+        {
+            var token = await JS.InvokeAsync<string>("bcvGetTurnstileResponse", _widgetId);
+            return string.IsNullOrEmpty(token) ? null : token;
+        }
+        catch { return null; }
+    }
+
+    public async Task ResetAsync()
+    {
+        if (_widgetId is not null)
+            await JS.InvokeVoidAsync("bcvResetTurnstile", _widgetId);
+    }
+}

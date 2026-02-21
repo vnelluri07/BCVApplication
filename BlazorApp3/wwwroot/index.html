@@ -41,6 +41,46 @@
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="lib/tinymce/tinymce.min.js"></script>
     <script src="js/editor-helpers.js"></script>
+
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
+    <script>
+        // Google Sign-In init
+        window.bcvInitGoogleSignIn = function (clientId, dotnetRef) {
+            if (!google || !google.accounts) {
+                setTimeout(() => bcvInitGoogleSignIn(clientId, dotnetRef), 200);
+                return;
+            }
+            google.accounts.id.initialize({
+                client_id: clientId,
+                callback: (response) => dotnetRef.invokeMethodAsync('OnGoogleSignIn', response.credential)
+            });
+            google.accounts.id.renderButton(document.getElementById('google-signin-btn'), {
+                theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular'
+            });
+        };
+
+        // Turnstile
+        window.bcvRenderTurnstile = function (elementId, siteKey) {
+            if (!window.turnstile) {
+                setTimeout(() => bcvRenderTurnstile(elementId, siteKey), 200);
+                return;
+            }
+            return turnstile.render('#' + elementId, { sitekey: siteKey, theme: 'light' });
+        };
+
+        window.bcvGetTurnstileResponse = function (widgetId) {
+            return turnstile.getResponse(widgetId);
+        };
+
+        window.bcvResetTurnstile = function (widgetId) {
+            turnstile.reset(widgetId);
+        };
+    </script>
 </body>
 
 </html>

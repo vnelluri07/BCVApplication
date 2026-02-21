@@ -1,0 +1,52 @@
+@page "/login"
+@inject BeersCheersVasis.Api.Client.IAuthApi AuthApi
+@inject BlazorApp3.Services.BcvAuthStateProvider AuthState
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
+
+<PageTitle>Sign In — Beers Cheers & Vasis</PageTitle>
+
+<section class="bcv-section">
+    <div class="bcv-container" style="max-width:400px; text-align:center;">
+        <h1 class="bcv-mb-lg">Sign In</h1>
+        <p class="bcv-text-muted bcv-mb-xl">Sign in with your Google account to access the admin dashboard.</p>
+
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <p style="color:var(--bcv-danger); margin-bottom:1rem;">@_error</p>
+        }
+
+        <div id="google-signin-btn" style="display:inline-block;"></div>
+    </div>
+</section>
+
+@code {
+    private string _error = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var clientId = Config["GoogleAuth:ClientId"];
+            await JS.InvokeVoidAsync("bcvInitGoogleSignIn", clientId, DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnGoogleSignIn(string idToken)
+    {
+        _error = "";
+        try
+        {
+            var result = await AuthApi.GoogleLoginAsync(idToken);
+            await AuthState.LoginAsync(result.Token);
+            Nav.NavigateTo("/admin");
+        }
+        catch (Exception ex)
+        {
+            _error = "Sign in failed. Make sure your account has admin access.";
+        }
+        StateHasChanged();
+    }
+}

@@ -1,4 +1,5 @@
 @page "/admin"
+@attribute [Authorize]
 @inject BeersCheersVasis.Api.Client.IScriptApi ScriptApi
 @inject BeersCheersVasis.Api.Client.ICategoryApi CategoryApi
 @inject BeersCheersVasis.Api.Client.ICommentApi CommentApi
