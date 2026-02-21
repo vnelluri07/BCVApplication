@@ -31,9 +31,11 @@
                 <button class="@FilterClass("draft")" @onclick='() => _filter = "draft"'>Drafts (@_allScripts.Count(s => !s.IsPublished && !s.IsDeleted))</button>
                 <button class="@FilterClass("published")" @onclick='() => _filter = "published"'>Published (@_allScripts.Count(s => s.IsPublished))</button>
                 <button class="@FilterClass("deleted")" @onclick='() => _filter = "deleted"'>Deleted (@_allScripts.Count(s => s.IsDeleted))</button>
-                @if (_allScripts.Any(s => !s.IsPublished && !s.IsDeleted))
+                @if (_selected.Any())
                 {
-                    <button class="bcv-btn" style="margin-left:auto; font-size:0.8rem; padding:0.3rem 0.8rem;" @onclick="PublishAll">Publish All Drafts</button>
+                    <span style="margin-left:auto; font-size:0.85rem; color:var(--bcv-muted);">@_selected.Count selected</span>
+                    <button class="bcv-btn" style="font-size:0.8rem; padding:0.3rem 0.8rem;" @onclick="PublishSelected">Publish Selected</button>
+                    <button class="bcv-btn-sm" @onclick="() => _selected.Clear()">Clear</button>
                 }
             </div>
 
@@ -46,12 +48,16 @@
                 <div class="bcv-admin-table-wrap">
                     <table class="bcv-admin-table">
                         <thead>
-                            <tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+                            <tr>
+                                <th style="width:2rem;"><input type="checkbox" @onchange="ToggleSelectAll" checked="@_allFiltered" /></th>
+                                <th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
                             @foreach (var s in FilteredScripts)
                             {
                                 <tr>
+                                    <td><input type="checkbox" checked="@_selected.Contains(s.Id)" @onchange="() => ToggleSelect(s.Id)" /></td>
                                     <td>@s.Title</td>
                                     <td>@(s.CategoryName ?? "—")</td>
                                     <td>
@@ -202,6 +208,7 @@
     private string _tab = "scripts";
     private string _filter = "all";
     private string _scriptSearch = "";
+    private HashSet<int> _selected = new();
 
     private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse> _allScripts = Enumerable.Empty<BeersCheersVasis.Api.Models.Script.ScriptResponse>();
     private IEnumerable<BeersCheersVasis.Api.Models.Category.CategoryResponse> _categories = Enumerable.Empty<BeersCheersVasis.Api.Models.Category.CategoryResponse>();
@@ -232,6 +239,21 @@
         }
     }
 
+    private bool _allFiltered => FilteredScripts.Any() && FilteredScripts.All(s => _selected.Contains(s.Id));
+
+    private void ToggleSelect(int id)
+    {
+        if (!_selected.Remove(id)) _selected.Add(id);
+    }
+
+    private void ToggleSelectAll()
+    {
+        if (_allFiltered)
+            foreach (var s in FilteredScripts) _selected.Remove(s.Id);
+        else
+            foreach (var s in FilteredScripts) _selected.Add(s.Id);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await Reload();
@@ -247,7 +269,13 @@
 
     // Script actions
     private async Task Publish(int id) { try { await ScriptApi.PublishAsync(id); await Reload(); } catch { } }
-    private async Task PublishAll() { try { await ScriptApi.PublishAllAsync(); await Reload(); } catch { } }
+    private async Task PublishSelected()
+    {
+        foreach (var id in _selected.ToList())
+            try { await ScriptApi.PublishAsync(id); } catch { }
+        _selected.Clear();
+        await Reload();
+    }
     private async Task Unpublish(int id) { try { await ScriptApi.UnpublishAsync(id); await Reload(); } catch { } }
     private async Task Delete(int id) { try { await ScriptApi.SoftDeleteAsync(id); await Reload(); } catch { } }
 
