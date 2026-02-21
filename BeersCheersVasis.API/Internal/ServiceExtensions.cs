@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -31,8 +31,12 @@ public static class ServiceExtensions
             );
         });
     }
+
     public static void ConfigureBearerToken(this IServiceCollection services, IConfiguration config)
     {
+        var jwtKey = config["Jwt:Key"]
+            ?? throw new InvalidOperationException("Jwt:Key not configured. Set via user-secrets or environment variable Jwt__Key.");
+
         services
             .AddAuthentication("Bearer")
             .AddJwtBearer(options =>
@@ -42,9 +46,12 @@ public static class ServiceExtensions
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["HsipApiSettings:AuthorizationSettings:JWTTokenSecret"]!)),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                    ValidateIssuer = true,
+                    ValidIssuer = config["Jwt:Issuer"] ?? "BeersCheersVasis.API",
+                    ValidateAudience = true,
+                    ValidAudience = config["Jwt:Audience"] ?? "BeersCheersVasis.App",
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
                 options.Events = new JwtBearerEvents
@@ -58,7 +65,7 @@ public static class ServiceExtensions
                     {
                         if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                         {
-                            context.Response.Headers.Add("Token-Expired", "true");
+                            context.Response.Headers.Append("Token-Expired", "true");
                         }
                         return Task.CompletedTask;
                     }
@@ -69,15 +76,6 @@ public static class ServiceExtensions
     public static void ConfigureApi(this IServiceCollection services)
     {
         services.AddControllers();
-
-        services
-            .AddControllers();
-            //.AddNewtonsoftJson(options =>
-            //{
-            //    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-            //    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            //    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-            //});
 
         services.AddApiVersioning(options =>
         {
@@ -118,4 +116,3 @@ public static class ServiceExtensions
         });
     }
 }
-
