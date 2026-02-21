@@ -54,9 +54,9 @@ public class Startup
         app.UseStaticFiles();
         app.UseMiddleware<Internal.RateLimitMiddleware>();
         app.UseRouting();
+        app.UseCors("AllowAllCorsPolicy");
         app.UseAuthentication();
         app.UseAuthorization();
-        app.UseCors("AllowAllCorsPolicy");
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
