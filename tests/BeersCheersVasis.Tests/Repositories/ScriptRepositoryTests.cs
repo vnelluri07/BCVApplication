@@ -189,4 +189,59 @@ public class ScriptRepositoryTests : IDisposable
     }
 
     public void Dispose() => _dbContext.Dispose();
+
+    [Fact]
+    public async Task PublishAllScriptsAsync_PublishesAllUnpublished()
+    {
+        SeedScript("A", "C1");
+        SeedScript("B", "C2");
+        var count = await _sut.PublishAllScriptsAsync(CancellationToken.None);
+        Assert.Equal(2, count);
+        Assert.True(_dbContext.Script.All(s => s.IsPublished));
+    }
+
+    [Fact]
+    public async Task PublishAllScriptsAsync_SkipsAlreadyPublished()
+    {
+        var s = SeedScript();
+        await _sut.PublishScriptAsync(s.Id, CancellationToken.None);
+        var count = await _sut.PublishAllScriptsAsync(CancellationToken.None);
+        Assert.Equal(0, count);
+    }
+
+    [Fact]
+    public async Task RestoreScriptAsync_SetsIsDeletedFalse()
+    {
+        var s = SeedScript();
+        await _sut.SoftDeleteScriptAsync(s.Id, CancellationToken.None);
+        Assert.True(_dbContext.Script.First().IsDeleted);
+
+        await _sut.RestoreScriptAsync(s.Id, CancellationToken.None);
+        Assert.False(_dbContext.Script.First().IsDeleted);
+    }
+
+    [Fact]
+    public async Task ScheduleScriptAsync_SetsScheduledDate()
+    {
+        var s = SeedScript();
+        var future = DateTime.UtcNow.AddDays(7);
+        await _sut.ScheduleScriptAsync(s.Id, future, CancellationToken.None);
+        var script = _dbContext.Script.First(x => x.Id == s.Id);
+        Assert.NotNull(script.ScheduledPublishDate);
+        Assert.Equal(future, script.ScheduledPublishDate.Value, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task GetPublishedScriptsAsync_ExcludesDeleted()
+    {
+        var s1 = SeedScript("Pub", "C");
+        var s2 = SeedScript("Del", "C");
+        await _sut.PublishScriptAsync(s1.Id, CancellationToken.None);
+        await _sut.PublishScriptAsync(s2.Id, CancellationToken.None);
+        await _sut.SoftDeleteScriptAsync(s2.Id, CancellationToken.None);
+
+        var published = await _sut.GetPublishedScriptsAsync(CancellationToken.None);
+        Assert.Single(published);
+        Assert.Equal("Pub", published.First().Title);
+    }
 }
