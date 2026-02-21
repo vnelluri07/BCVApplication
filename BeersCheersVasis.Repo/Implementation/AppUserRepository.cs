@@ -92,4 +92,21 @@ public sealed class AppUserRepository : IAppUserRepository
         entity.ModifiedDate = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<AppUserResponse>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        return await _dbContext.AppUsers
+            .OrderByDescending(u => u.CreatedDate)
+            .Select(u => MapToResponse(u))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task ToggleActiveAsync(int id, CancellationToken cancellationToken)
+    {
+        var entity = await _dbContext.AppUsers.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException($"AppUser {id} not found");
+        entity.IsActive = !entity.IsActive;
+        entity.ModifiedDate = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
 }

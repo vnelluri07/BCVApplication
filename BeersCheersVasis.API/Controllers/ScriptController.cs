@@ -92,6 +92,14 @@ public class ScriptController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
+    [HttpPut("restore/{id}")]
+    public async Task<IActionResult> RestoreAsync(int id, CancellationToken cancellationToken)
+    {
+        await _scriptService.RestoreScriptAsync(id, cancellationToken);
+        return Ok();
+    }
+
+    [Authorize(Roles = "Admin")]
     [HttpPut("set-category/{id}/{categoryId}")]
     public async Task<IActionResult> SetCategoryAsync(int id, int categoryId, CancellationToken cancellationToken)
     {

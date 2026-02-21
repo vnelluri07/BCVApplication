@@ -145,6 +145,15 @@ public class ScriptRepository : IScriptRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task RestoreScriptAsync(int id, CancellationToken cancellationToken)
+    {
+        var script = await _dbContext.Script.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            ?? throw new ArgumentException($"Script with ID '{id}' not found.");
+        script.IsDeleted = false;
+        script.ModifiedDate = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task SetCategoryAsync(int id, int categoryId, CancellationToken cancellationToken)
     {
         var script = await _dbContext.Script.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)

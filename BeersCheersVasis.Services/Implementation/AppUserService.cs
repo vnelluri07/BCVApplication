@@ -30,4 +30,13 @@ public sealed class AppUserService : IAppUserService
     {
         return await _appUserRepository.GetByIdAsync(id, cancellationToken);
     }
+
+    public Task<IEnumerable<AppUserResponse>> GetAllAsync(CancellationToken cancellationToken)
+        => _appUserRepository.GetAllAsync(cancellationToken);
+
+    public Task SetRoleAsync(int id, string role, CancellationToken cancellationToken)
+        => _appUserRepository.SetRoleAsync(id, role, cancellationToken);
+
+    public Task ToggleActiveAsync(int id, CancellationToken cancellationToken)
+        => _appUserRepository.ToggleActiveAsync(id, cancellationToken);
 }

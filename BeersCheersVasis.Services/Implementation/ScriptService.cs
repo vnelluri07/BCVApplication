@@ -51,6 +51,9 @@ public sealed class ScriptService : IScriptService
     public async Task SoftDeleteScriptAsync(int id, CancellationToken cancellationToken)
         => await _scriptRepository.SoftDeleteScriptAsync(id, cancellationToken);
 
+    public async Task RestoreScriptAsync(int id, CancellationToken cancellationToken)
+        => await _scriptRepository.RestoreScriptAsync(id, cancellationToken);
+
     public async Task SetCategoryAsync(int id, int categoryId, CancellationToken cancellationToken)
         => await _scriptRepository.SetCategoryAsync(id, categoryId, cancellationToken);
 }
