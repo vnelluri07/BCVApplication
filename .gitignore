@@ -22,3 +22,9 @@ BeersCheersVasis.Repo/obj
 BeersCheersVasis.Services/obj
 /.vs
 BlazorApp4/obj
+.amazonq
+.kiro
+tests/BeersCheersVasis.Tests/obj/Release
+tests/BeersCheersVasis.Tests/obj
+tests/BeersCheersVasis.Tests/bin/Release
+tests/BeersCheersVasis.Tests/bin

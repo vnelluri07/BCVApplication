@@ -1,5 +1,4 @@
 ﻿using BeersCheersVasis.Api.Models.Script;
-using BeersCheersVasis.Api.Models.User;
 
 namespace BeersCheersVasis.Api.Client.Implementations;
 
@@ -11,6 +10,7 @@ public sealed class ScriptApi : IScriptApi
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
+
     public async Task<IEnumerable<ScriptResponse>> ListAsync()
     {
         try
@@ -28,20 +28,13 @@ public sealed class ScriptApi : IScriptApi
         }
     }
 
-    public async Task<string> CreateAsync(CreateScriptRequest request)
+    public async Task<ScriptResponse> CreateAsync(CreateScriptRequest request)
     {
-        try
-        {
-            var result = await _httpClient.PostAsJsonAsync<CreateScriptRequest, string>("Script/create", request);
-            if (result == null)
-            {
-                throw new Exception("script not saved.");
-            }
-            return result;
-        }
-        catch (Exception ex)
-        {
-            throw ex.InnerException!;
-        }
+        return await _httpClient.PostAsJsonAsync<CreateScriptRequest, ScriptResponse>("Script/create", request).ConfigureAwait(false);
+    }
+
+    public async Task<ScriptResponse> UpdateAsync(UpdateScriptRequest request)
+    {
+        return await _httpClient.PutAsJsonAsync<UpdateScriptRequest, ScriptResponse>("Script/update", request).ConfigureAwait(false);
     }
 }

@@ -2,6 +2,6 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ActiveDebugProfile>https</ActiveDebugProfile>
-    <NameOfLastUsedPublishProfile>C:\Vasi Code\BeersCheersAndVasis_Blog\BCVApp\BeersCheersVasis.API\Properties\PublishProfiles\site1239-WebDeploy4.pubxml</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>C:\Vasi Personal\Vasi Code\BCVApp-Final\BCVApplication\BeersCheersVasis.API\Properties\PublishProfiles\site1239-WebDeploy5.pubxml</NameOfLastUsedPublishProfile>
   </PropertyGroup>
 </Project>

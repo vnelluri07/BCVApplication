@@ -8,10 +8,9 @@ public class LinkPreviewServiceTests
 {
     private static LinkPreviewService CreateSut(HttpResponseMessage response)
     {
-        var handler = new MockHandler(response);
+        var handler = new SmartMockHandler(response);
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://test/") };
-        var factory = new MockHttpClientFactory(httpClient);
-        return new LinkPreviewService(factory);
+        return new LinkPreviewService(new MockHttpClientFactory(httpClient));
     }
 
     // --- oEmbed ---
@@ -96,8 +95,8 @@ public class LinkPreviewServiceTests
     [Fact]
     public async Task GetPreviewAsync_OEmbedFails_FallsBackToOpenGraph()
     {
-        // First call (oEmbed) returns 404, second call (OpenGraph) returns HTML
         var handler = new SequentialHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = new HttpRequestMessage(HttpMethod.Head, "https://www.youtube.com/watch?v=fail") },
             new HttpResponseMessage(HttpStatusCode.NotFound),
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("<html><head><title>Fallback</title></head></html>") }
         );
@@ -143,11 +142,21 @@ public class LinkPreviewServiceTests
         public HttpClient CreateClient(string name) => _client;
     }
 
-    private class MockHandler : HttpMessageHandler
+    /// <summary>Returns a no-redirect HEAD response for HEAD requests, and the canned response for GET requests.</summary>
+    private class SmartMockHandler : HttpMessageHandler
     {
-        private readonly HttpResponseMessage _response;
-        public MockHandler(HttpResponseMessage response) => _response = response;
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) => Task.FromResult(_response);
+        private readonly HttpResponseMessage _getResponse;
+        public SmartMockHandler(HttpResponseMessage getResponse) => _getResponse = getResponse;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            if (request.Method == HttpMethod.Head)
+            {
+                // Simulate no redirect — return 200 with the original URL preserved
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = request });
+            }
+            return Task.FromResult(_getResponse);
+        }
     }
 
     private class SequentialHandler : HttpMessageHandler

@@ -1,7 +1,12 @@
 /* Editor Content CSS — Noto Sans for uniform multi-script rendering */
 
 /* Base font stack: Noto Sans covers Latin, Devanagari, Telugu, Arabic, Bengali, Tamil, Kannada */
-body.mce-content-body,
+body.mce-content-body {
+    font-family: 'Courier New', courier, monospace;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
 .editor-rendered-content {
     font-family: 'Noto Sans', 'Noto Sans Devanagari', 'Noto Sans Telugu', 'Noto Sans Arabic',
                  'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Kannada', sans-serif;
@@ -33,13 +38,13 @@ body.mce-content-body img,
     display: flex;
     border: 1px solid #e0e0e0;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     text-decoration: none;
     color: inherit;
     background: #fafafa;
     margin: 1em 0;
+    margin-top: 2em;
     max-width: 680px;
-    resize: horizontal;
     min-width: 300px;
 }
 
@@ -96,11 +101,10 @@ body.mce-content-body img,
     position: relative;
     padding-bottom: 56.25%;
     height: 0;
-    overflow: hidden;
     max-width: 680px;
     margin: 1em 0;
+    margin-top: 2em;
     border-radius: 12px;
-    resize: horizontal;
     min-width: 300px;
 }
 
@@ -112,4 +116,66 @@ body.mce-content-body img,
     height: 100%;
     border: 0;
     border-radius: 12px;
+}
+
+/* Overlay to capture clicks on video embeds (iframe steals them otherwise) */
+.video-embed::before {
+    content: '▶ Click to manage';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: transparent;
+    transition: all 0.2s;
+}
+
+.video-embed:hover::before {
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+}
+
+/* ── Card toolbar (move up/down/delete) ── */
+.link-preview-card,
+.video-embed {
+    position: relative;
+}
+
+.link-preview-card:hover,
+.video-embed:hover {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+}
+
+.bcv-card-toolbar {
+    position: absolute;
+    top: -32px;
+    right: 0;
+    display: flex;
+    gap: 2px;
+    background: #333;
+    border-radius: 6px;
+    padding: 2px 4px;
+    z-index: 100;
+}
+
+.bcv-card-toolbar button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    line-height: 1.4;
+}
+
+.bcv-card-toolbar button:hover {
+    background: #555;
 }

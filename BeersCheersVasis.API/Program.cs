@@ -1,6 +1,6 @@
 using BeersCheersVasis.API;
 
-Host.CreateDefaultBuilder(args)
+    Host.CreateDefaultBuilder(args)
     .ConfigureWebHostDefaults(webBuilder =>
     {
         webBuilder.UseStartup<Startup>();

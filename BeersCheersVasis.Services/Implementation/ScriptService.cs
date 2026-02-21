@@ -33,4 +33,11 @@ public sealed class ScriptService : IScriptService
         var response = await _scriptRepository.CreateScriptAsync(request, cancellationToken);
         return response;
     }
+
+    public async Task<ScriptResponse> UpdateScriptAsync(UpdateScriptRequest request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(UpdateScriptAsync));
+
+        return await _scriptRepository.UpdateScriptAsync(request, cancellationToken);
+    }
 }

@@ -23,6 +23,7 @@
         <MudText Typo="Typo.h6" Class="mt-4 mb-2">Script / Content</MudText>
 
         <Editor ScriptSrc="lib/tinymce/tinymce.min.js"
+                Id="bcv-editor"
                 @bind-Value="htmlContent"
                 Conf="@editorConf"
                 ClassName="bcv-editor" />
@@ -58,14 +59,17 @@
     private string saveStatusText = string.Empty;
     private const int DebounceMs = 500;
 
-    private string SaveIndicatorClass => _isSaving ? "save-indicator saving" : "save-indicator saved";
+    private bool _saveFailed;
+    private string SaveIndicatorClass => _isSaving ? "save-indicator saving" : _saveFailed ? "save-indicator failed" : "save-indicator saved";
 
     private Dictionary<string, object> editorConf = new()
     {
-        { "plugins", "lists link image code media table wordcount autolink" },
+        { "license_key", "gpl" },
+        { "plugins", "lists link image code media table wordcount autolink fullscreen noneditable" },
         { "toolbar", "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | " +
-                     "alignleft aligncenter alignright | bullist numlist | link image media | code | removeformat" },
+                     "alignleft aligncenter alignright | bullist numlist | link image media | fullscreen | code | removeformat" },
         { "height", 520 },
+        { "toolbar_mode", "wrap" },
         { "menubar", "file edit view insert format tools table" },
         { "content_css", "/css/editor-content.css" },
         { "font_family_formats",
@@ -80,19 +84,26 @@
         { "image_advtab", true },
         { "automatic_uploads", true },
         { "file_picker_types", "image" },
-        { "block_formats", "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Code=pre" }
+        { "block_formats", "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Code=pre" },
+        { "sandbox_iframes", false },
+        { "extended_valid_elements", "iframe[src|width|height|frameborder|allowfullscreen|allow|style|class],div[class|contenteditable|style]" }
     };
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Restore state from previous navigation
-        title = State.Title;
-        htmlContent = State.HtmlContent;
-        _scriptId = State.ScriptId;
-        UpdateWordCount();
+        if (firstRender)
+        {
+            await State.LoadAsync();
+            title = State.Title;
+            htmlContent = State.HtmlContent;
+            _scriptId = State.ScriptId;
+            UpdateWordCount();
 
-        if (_scriptId is not null)
-            saveStatusText = "Saved ✓";
+            if (_scriptId is not null)
+                saveStatusText = "Saved ✓";
+
+            StateHasChanged();
+        }
     }
 
     private async Task OpenEmbedDialog()
@@ -103,14 +114,14 @@
 
         if (result is not null && !result.Canceled && result.Data is string cardHtml)
         {
-            await JS.InvokeVoidAsync("tinymce.activeEditor.insertContent", cardHtml);
+            await JS.InvokeVoidAsync("bcvEditor.insertContent", "bcv-editor", cardHtml);
         }
     }
 
-    private void OnContentChanged()
+    private async void OnContentChanged()
     {
         UpdateWordCount();
-        PersistState();
+        await PersistStateAsync();
 
         if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(htmlContent))
             return;
@@ -119,11 +130,12 @@
         _debounceTimer = new Timer(async _ => await InvokeAsync(SaveAsync), null, DebounceMs, Timeout.Infinite);
     }
 
-    private void PersistState()
+    private async Task PersistStateAsync()
     {
         State.Title = title;
         State.HtmlContent = htmlContent;
         State.ScriptId = _scriptId;
+        await State.SaveAsync();
     }
 
     private void UpdateWordCount()
@@ -139,6 +151,7 @@
         try
         {
             _isSaving = true;
+            _saveFailed = false;
             saveStatusText = "Saving...";
             StateHasChanged();
 
@@ -165,13 +178,14 @@
                 await Controller.UpdateScript(request);
             }
 
-            PersistState();
+            await PersistStateAsync();
             _isSaving = false;
             saveStatusText = "Saved ✓";
         }
         catch
         {
             _isSaving = false;
+            _saveFailed = true;
             saveStatusText = "Save failed";
         }
 
@@ -192,14 +206,11 @@
         Snackbar.Add($"Published: {response.Title}", Severity.Success);
 
         // Clear state after publish
-        State.Title = string.Empty;
-        State.HtmlContent = string.Empty;
-        State.ScriptId = null;
+        await State.ClearAsync();
     }
 
     public void Dispose()
     {
-        PersistState();
         _debounceTimer?.Dispose();
     }
 }
@@ -228,6 +239,10 @@
 
     .save-indicator.saved {
         color: #4caf50;
+    }
+
+    .save-indicator.failed {
+        color: #f44336;
     }
 
     .editor-container {

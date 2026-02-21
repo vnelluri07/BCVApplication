@@ -85,14 +85,17 @@ public class BcvHttpClient
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
+    private async Task<HttpClient> GetHttpClientAsync()
+    {
+        if (_options.GetAuthToken is not null)
+            return _httpClient.AddAuthToken(await _options.GetAuthToken());
+        return _httpClient;
+    }
+
     public async Task<TResponse> PostAsJsonAsync<TRequest, TResponse>(string endpoint, TRequest content)
     {
-        ArgumentNullException.ThrowIfNull(_options, nameof(_options));
-        ArgumentNullException.ThrowIfNull(_options.GetAuthToken, nameof(_options.GetAuthToken));
-
-        var http = _httpClient.AddAuthToken(await _options.GetAuthToken());
-        var response = await http.PostAsJsonAsync
-            <TRequest>(endpoint, content); 
+        var http = await GetHttpClientAsync();
+        var response = await http.PostAsJsonAsync<TRequest>(endpoint, content);
         if (response.IsSuccessStatusCode)
         {
             var data = await response.Content.ReadFromJsonAsync<TResponse>(_serializerOptions).ConfigureAwait(false);
@@ -125,12 +128,8 @@ public class BcvHttpClient
 
     public async Task PostAsJsonAsync<TRequest>(string endpoint, TRequest content)
     {
-        ArgumentNullException.ThrowIfNull(_options, nameof(_options));
-        ArgumentNullException.ThrowIfNull(_options.GetAuthToken, nameof(_options.GetAuthToken));
-
-        var http = _httpClient.AddAuthToken(await _options.GetAuthToken());
-        var response = await http.PostAsJsonAsync
-            <TRequest>(endpoint, content);
+        var http = await GetHttpClientAsync();
+        var response = await http.PostAsJsonAsync<TRequest>(endpoint, content);
         if (response.IsSuccessStatusCode)
             return;
         throw MatchStatusCode(response.StatusCode);
@@ -138,40 +137,37 @@ public class BcvHttpClient
 
     public async Task<TResponse> GetFromJsonAsync<TResponse>(string endpoint)
     {
-        ArgumentNullException.ThrowIfNull(_options, nameof(_options));
-        //ArgumentNullException.ThrowIfNull(_options.GetAuthToken, nameof(_options.GetAuthToken));
-
-        //var http = _httpClient.AddAuthToken(/*await _options!.GetAuthToken()*/"test");
-        var http = _httpClient;
+        var http = await GetHttpClientAsync();
         var response = await http.GetAsync(endpoint);
-        try
+        if (response.IsSuccessStatusCode)
         {
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadFromJsonAsync<TResponse>(_serializerOptions).ConfigureAwait(false) ?? default(TResponse);
-                return data!;
-            }
-        }
-        catch (Exception ex)
-        {
-
-            throw ex.InnerException;
+            var data = await response.Content.ReadFromJsonAsync<TResponse>(_serializerOptions).ConfigureAwait(false) ?? default(TResponse);
+            return data!;
         }
 
         throw MatchStatusCode(response.StatusCode);
     }
 
     public async Task<TResponse> GetFromJsonAsync<TRequest, TResponse>(string endpoint, TRequest request = default!)
-
     {
-        ArgumentNullException.ThrowIfNull(_options, nameof(_options));
-        ArgumentNullException.ThrowIfNull(_options.GetAuthToken, nameof(_options.GetAuthToken));
-
-        var http = _httpClient.AddAuthToken(await _options!.GetAuthToken());
+        var http = await GetHttpClientAsync();
         var response = await http.GetAsync(endpoint);
         if (response.IsSuccessStatusCode)
         {
             var data = await response.Content.ReadFromJsonAsync<TResponse>(_serializerOptions).ConfigureAwait(false) ?? default(TResponse);
+            return data!;
+        }
+
+        throw MatchStatusCode(response.StatusCode);
+    }
+
+    public async Task<TResponse> PutAsJsonAsync<TRequest, TResponse>(string endpoint, TRequest content)
+    {
+        var http = await GetHttpClientAsync();
+        var response = await http.PutAsJsonAsync<TRequest>(endpoint, content);
+        if (response.IsSuccessStatusCode)
+        {
+            var data = await response.Content.ReadFromJsonAsync<TResponse>(_serializerOptions).ConfigureAwait(false);
             return data!;
         }
 
@@ -191,4 +187,3 @@ public class BcvHttpClient
     }
 
 }
-

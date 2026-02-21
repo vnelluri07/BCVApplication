@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "BeersCheersVasis.API\\BeersCheersVasis.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "BlazorApp3\\BlazorApp3.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

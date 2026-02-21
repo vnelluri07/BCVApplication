@@ -12,7 +12,6 @@ public sealed class LinkPreviewService : ILinkPreviewService
     private static readonly Dictionary<string, string> OEmbedProviders = new(StringComparer.OrdinalIgnoreCase)
     {
         { "youtube.com", "https://www.youtube.com/oembed?url={0}&format=json" },
-        { "youtu.be", "https://www.youtube.com/oembed?url={0}&format=json" },
         { "twitter.com", "https://publish.twitter.com/oembed?url={0}" },
         { "x.com", "https://publish.twitter.com/oembed?url={0}" },
         { "vimeo.com", "https://vimeo.com/api/oembed.json?url={0}" },
@@ -28,30 +27,36 @@ public sealed class LinkPreviewService : ILinkPreviewService
     {
         ArgumentNullException.ThrowIfNull(url, nameof(url));
 
-        var normalizedUrl = NormalizeUrl(url);
-        var uri = new Uri(normalizedUrl);
+        // Resolve redirects (youtu.be → youtube.com, t.co → twitter.com, bit.ly → anything, etc.)
+        var resolvedUrl = await ResolveRedirectsAsync(url, cancellationToken).ConfigureAwait(false);
+
+        var uri = new Uri(resolvedUrl);
         var host = uri.Host.Replace("www.", "");
 
         if (OEmbedProviders.TryGetValue(host, out var oEmbedEndpoint))
         {
-            var oEmbedResult = await TryOEmbedAsync(normalizedUrl, oEmbedEndpoint, cancellationToken).ConfigureAwait(false);
+            var oEmbedResult = await TryOEmbedAsync(resolvedUrl, oEmbedEndpoint, cancellationToken).ConfigureAwait(false);
             if (oEmbedResult is not null)
                 return oEmbedResult;
         }
 
-        return await FetchOpenGraphAsync(normalizedUrl, uri, cancellationToken).ConfigureAwait(false);
+        return await FetchOpenGraphAsync(resolvedUrl, uri, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>Expands youtu.be short URLs to full youtube.com/watch?v= format for reliable oEmbed.</summary>
-    private static string NormalizeUrl(string url)
+    /// <summary>Follows HTTP redirects via HEAD request to resolve short/tracking URLs to their canonical destination.</summary>
+    private async Task<string> ResolveRedirectsAsync(string url, CancellationToken ct)
     {
-        var uri = new Uri(url);
-        if (uri.Host.Equals("youtu.be", StringComparison.OrdinalIgnoreCase) && uri.AbsolutePath.Length > 1)
+        try
         {
-            var videoId = uri.AbsolutePath.TrimStart('/');
-            return $"https://www.youtube.com/watch?v={videoId}";
+            var client = _httpClientFactory.CreateClient("LinkPreview");
+            using var request = new HttpRequestMessage(HttpMethod.Head, url);
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+            return response.RequestMessage?.RequestUri?.ToString() ?? url;
         }
-        return url;
+        catch
+        {
+            return url;
+        }
     }
 
     private async Task<LinkPreviewResponse?> TryOEmbedAsync(string url, string endpointTemplate, CancellationToken ct)

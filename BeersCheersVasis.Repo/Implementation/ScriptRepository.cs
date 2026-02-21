@@ -97,5 +97,28 @@ public class ScriptRepository : IScriptRepository
         return scriptResponse;
     }
 
+    public async Task<ScriptResponse> UpdateScriptAsync(UpdateScriptRequest request, CancellationToken cancellationToken)
+    {
+        var script = await _dbContext.Script.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken)
+            ?? throw new ArgumentException($"Script with ID '{request.Id}' not found.");
 
+        script.Title = request.Title;
+        script.Content = request.Content;
+        script.ModifiedByUserId = request.ModifiedBy;
+        script.ModifiedDate = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return new ScriptResponse
+        {
+            Id = script.Id,
+            Title = script.Title,
+            Content = script.Content,
+            IsActive = script.IsActive,
+            CreatedBy = script.CreatedByUserId,
+            CreatedDate = script.CreatedDate,
+            ModifiedBy = script.ModifiedByUserId,
+            ModifiedDate = script.ModifiedDate
+        };
+    }
 }
