@@ -1,5 +1,6 @@
-﻿using BeersCheersVasis.Api.Models.Script;
+using BeersCheersVasis.Api.Models.Script;
 using BeersCheersVasis.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeersCheersVasis.API.Controllers;
@@ -22,6 +23,20 @@ public class ScriptController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("GetPublished")]
+    public async Task<IActionResult> GetPublishedAsync(CancellationToken cancellationToken)
+    {
+        var result = await _scriptService.GetPublishedScriptsAsync(cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("GetPublished/{categoryId}")]
+    public async Task<IActionResult> GetPublishedByCategoryAsync(int categoryId, CancellationToken cancellationToken)
+    {
+        var result = await _scriptService.GetPublishedByCategoryAsync(categoryId, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpGet("GetScript/{id}")]
     public async Task<IActionResult> GetScriptAsync(int id, CancellationToken cancellationToken)
     {
@@ -32,8 +47,6 @@ public class ScriptController : ControllerBase
     [HttpPost("create")]
     public async Task<IActionResult> CreateScriptAsync(CreateScriptRequest request, CancellationToken cancellationToken)
     {
-        //TODO: Temp stuff
-        var scriptRequest = new CreateScriptRequest();
         var result = await _scriptService.CreateScriptAsync(request, cancellationToken);
         return Ok(result);
     }
@@ -43,5 +56,38 @@ public class ScriptController : ControllerBase
     {
         var result = await _scriptService.UpdateScriptAsync(request, cancellationToken);
         return Ok(result);
+    }
+
+    // Admin endpoints
+    [Authorize(Roles = "Admin")]
+    [HttpPut("publish/{id}")]
+    public async Task<IActionResult> PublishAsync(int id, CancellationToken cancellationToken)
+    {
+        await _scriptService.PublishScriptAsync(id, cancellationToken);
+        return Ok();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("unpublish/{id}")]
+    public async Task<IActionResult> UnpublishAsync(int id, CancellationToken cancellationToken)
+    {
+        await _scriptService.UnpublishScriptAsync(id, cancellationToken);
+        return Ok();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("soft-delete/{id}")]
+    public async Task<IActionResult> SoftDeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        await _scriptService.SoftDeleteScriptAsync(id, cancellationToken);
+        return Ok();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("set-category/{id}/{categoryId}")]
+    public async Task<IActionResult> SetCategoryAsync(int id, int categoryId, CancellationToken cancellationToken)
+    {
+        await _scriptService.SetCategoryAsync(id, categoryId, cancellationToken);
+        return Ok();
     }
 }

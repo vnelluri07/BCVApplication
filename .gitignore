@@ -28,3 +28,7 @@ tests/BeersCheersVasis.Tests/obj/Release
 tests/BeersCheersVasis.Tests/obj
 tests/BeersCheersVasis.Tests/bin/Release
 tests/BeersCheersVasis.Tests/bin
+client_secret_*.json
+~$*
+BCV-Google-OAuth.docx
+*.docx

@@ -1,4 +1,4 @@
-﻿using BeersCheersVasis.Data.Entities;
+using BeersCheersVasis.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -8,8 +8,9 @@ public interface IdbContext
 {
     DbSet<User> Users { get; }
     DbSet<Script> Script { get; }
+    DbSet<Category> Categories { get; }
+    DbSet<Comment> Comments { get; }
+    DbSet<AppUser> AppUsers { get; }
 
-    //TODO:will add this later in UnitOfWork
-    //DatabaseFacade Database { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

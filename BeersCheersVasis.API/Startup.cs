@@ -1,3 +1,4 @@
+using BeersCheersVasis.API.Configuration;
 using BeersCheersVasis.API.Internal;
 using BeersCheersVasis.Services;
 using BeersCheersVasis.Services.Implementation;
@@ -25,14 +26,50 @@ public class Startup
         services.ConfigureApiService();
         services.ConfigureSwagger();
         services.ConfigureBearerToken(_configuration);
+
+        // Bind config sections
+        var googleAuth = _configuration.GetSection("GoogleAuth").Get<GoogleAuthSettings>() ?? new();
+        var turnstile = _configuration.GetSection("CloudflareTurnstile").Get<CloudflareTurnstileSettings>() ?? new();
+        var jwt = _configuration.GetSection("Jwt").Get<JwtSettings>() ?? new();
+
+        services.AddSingleton(googleAuth);
+        services.AddSingleton(turnstile);
+        services.AddSingleton(jwt);
+
+        // Auth services
+        services.AddHttpClient();
+        services.AddScoped<ITurnstileService>(sp =>
+            new TurnstileService(sp.GetRequiredService<IHttpClientFactory>(), turnstile.SecretKey));
+        services.AddScoped<IAuthService>(sp =>
+            new AuthService(
+                sp.GetRequiredService<BeersCheersVasis.Repository.IAppUserRepository>(),
+                googleAuth.ClientId, jwt.Key, jwt.Issuer, jwt.Audience));
+
+        // JWT Authentication
+        services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwt.Issuer,
+                    ValidAudience = jwt.Audience,
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                        System.Text.Encoding.UTF8.GetBytes(jwt.Key))
+                };
+            });
+        services.AddAuthorization();
     }
 
     public void Configure(IApplicationBuilder app, IApiVersionDescriptionProvider provider)
     {
         app.UseStaticFiles(); // Serve uploaded images from wwwroot
         app.UseRouting();
-        //app.UseAuthentication();
-        //app.UseAuthorization();
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.UseCors("AllowAllCorsPolicy");
         app.UseEndpoints(endpoints =>
         {

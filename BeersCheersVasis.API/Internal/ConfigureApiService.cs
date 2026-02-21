@@ -7,7 +7,6 @@ using BeersCheersVasis.Repository.Implementation;
 using BeersCheersVasis.Repository.UnitOfWork;
 using BeersCheersVasis.Services;
 using BeersCheersVasis.Services.Implementation;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace BeersCheersVasis.API.Internal;
@@ -21,14 +20,25 @@ public static class ApiConfigureApiService
             var cfgSvc = service.GetRequiredService<IBcvApiConfigurationService>();
             var env = service.GetRequiredService<IHostEnvironment>();
             options.UseSqlServer(cfgSvc.BcvConnectionString, builder => builder.EnableRetryOnFailure(
-                5, TimeSpan.FromSeconds(60),null));
+                5, TimeSpan.FromSeconds(60), null));
         });
 
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUnitOfWork, BcvUnitOfWork>();
-        services.AddScoped<IScriptService, ScriptService>();
+
+        // Repositories
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IScriptRepository, ScriptRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<IAppUserRepository, AppUserRepository>();
+
+        // Services
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IScriptService, ScriptService>();
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ICommentService, CommentService>();
+        services.AddScoped<IAppUserService, AppUserService>();
+        services.AddSingleton<IAnonymousNameGenerator, AnonymousNameGenerator>();
 
         services.AddScoped<IImageService>(sp =>
         {
