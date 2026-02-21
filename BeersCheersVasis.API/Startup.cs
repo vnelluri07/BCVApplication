@@ -45,22 +45,6 @@ public class Startup
                 sp.GetRequiredService<BeersCheersVasis.Repository.IAppUserRepository>(),
                 googleAuth.ClientId, jwt.Key, jwt.Issuer, jwt.Audience));
 
-        // JWT Authentication
-        services.AddAuthentication("Bearer")
-            .AddJwtBearer("Bearer", options =>
-            {
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwt.Issuer,
-                    ValidAudience = jwt.Audience,
-                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                        System.Text.Encoding.UTF8.GetBytes(jwt.Key))
-                };
-            });
         services.AddAuthorization();
     }
 
