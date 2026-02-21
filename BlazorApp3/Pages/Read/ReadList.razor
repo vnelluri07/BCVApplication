@@ -47,7 +47,7 @@
         else
         {
             <div class="bcv-card-grid">
-                @foreach (var script in FilteredScripts)
+                @foreach (var script in PagedScripts)
                 {
                     <div class="bcv-card" @onclick="() => GoToScript(script.Id)">
                         <div class="bcv-card-body">
@@ -68,6 +68,15 @@
                     </div>
                 }
             </div>
+
+            @if (TotalPages > 1)
+            {
+                <div style="display:flex; justify-content:center; gap:0.5rem; margin-top:2rem;">
+                    <button class="bcv-btn-sm" disabled="@(_page <= 1)" @onclick="() => _page--">← Prev</button>
+                    <span class="bcv-text-muted" style="padding:0.3rem 0.5rem;">@_page / @TotalPages</span>
+                    <button class="bcv-btn-sm" disabled="@(_page >= TotalPages)" @onclick="() => _page++">Next →</button>
+                </div>
+            }
         }
     </div>
 </section>
@@ -78,11 +87,18 @@
     private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse>? _scripts;
     private string? _categoryName;
     private string _search = "";
+    private int _page = 1;
+    private const int PageSize = 9;
 
     private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse> FilteredScripts =>
         string.IsNullOrWhiteSpace(_search)
             ? _scripts!
             : _scripts!.Where(s => s.Title?.Contains(_search, StringComparison.OrdinalIgnoreCase) == true);
+
+    private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse> PagedScripts =>
+        FilteredScripts.Skip((_page - 1) * PageSize).Take(PageSize);
+
+    private int TotalPages => (int)Math.Ceiling(FilteredScripts.Count() / (double)PageSize);
 
     protected override async Task OnParametersSetAsync()
     {

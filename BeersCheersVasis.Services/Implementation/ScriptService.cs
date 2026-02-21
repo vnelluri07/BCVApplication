@@ -56,4 +56,7 @@ public sealed class ScriptService : IScriptService
 
     public async Task SetCategoryAsync(int id, int categoryId, CancellationToken cancellationToken)
         => await _scriptRepository.SetCategoryAsync(id, categoryId, cancellationToken);
+
+    public async Task ScheduleScriptAsync(int id, DateTime publishDate, CancellationToken cancellationToken)
+        => await _scriptRepository.ScheduleScriptAsync(id, publishDate, cancellationToken);
 }

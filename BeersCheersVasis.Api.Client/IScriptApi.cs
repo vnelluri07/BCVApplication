@@ -15,5 +15,6 @@ public interface IScriptApi
     Task UnpublishAsync(int id);
     Task SoftDeleteAsync(int id);
     Task RestoreAsync(int id);
+    Task ScheduleAsync(int id, DateTime publishDate);
     Task SetCategoryAsync(int id, int categoryId);
 }

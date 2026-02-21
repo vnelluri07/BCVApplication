@@ -36,6 +36,9 @@ public sealed class Script
     [Column("PUBLISHED_DATE", TypeName = "DATETIME")]
     public DateTime? PublishedDate { get; set; }
 
+    [Column("SCHEDULED_PUBLISH_DATE", TypeName = "DATETIME")]
+    public DateTime? ScheduledPublishDate { get; set; }
+
     [Required]
     [Column("CREATED_BY_USER_ID")]
     public int CreatedByUserId { get; set; }

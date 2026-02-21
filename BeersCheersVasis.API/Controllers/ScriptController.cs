@@ -106,4 +106,12 @@ public class ScriptController : ControllerBase
         await _scriptService.SetCategoryAsync(id, categoryId, cancellationToken);
         return Ok();
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("schedule/{id}")]
+    public async Task<IActionResult> ScheduleAsync(int id, [FromQuery] DateTime publishDate, CancellationToken cancellationToken)
+    {
+        await _scriptService.ScheduleScriptAsync(id, publishDate, cancellationToken);
+        return Ok();
+    }
 }

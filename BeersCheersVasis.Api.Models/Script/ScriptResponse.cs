@@ -11,6 +11,7 @@ public sealed class ScriptResponse
     public bool IsPublished { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? PublishedDate { get; set; }
+    public DateTime? ScheduledPublishDate { get; set; }
     public DateTime? CreatedDate { get; set; }
     public int CreatedBy { get; set; }
     public DateTime? ModifiedDate { get; set; }

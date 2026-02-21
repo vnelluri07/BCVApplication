@@ -163,6 +163,15 @@ public class ScriptRepository : IScriptRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task ScheduleScriptAsync(int id, DateTime publishDate, CancellationToken cancellationToken)
+    {
+        var script = await _dbContext.Script.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            ?? throw new ArgumentException($"Script with ID '{id}' not found.");
+        script.ScheduledPublishDate = publishDate;
+        script.ModifiedDate = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     private static ScriptResponse MapToResponse(Script s) => new()
     {
         Id = s.Id,
@@ -174,6 +183,7 @@ public class ScriptRepository : IScriptRepository
         IsPublished = s.IsPublished,
         IsDeleted = s.IsDeleted,
         PublishedDate = s.PublishedDate,
+        ScheduledPublishDate = s.ScheduledPublishDate,
         CreatedBy = s.CreatedByUserId,
         CreatedDate = s.CreatedDate,
         ModifiedBy = s.ModifiedByUserId,

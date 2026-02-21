@@ -51,7 +51,8 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IApiVersionDescriptionProvider provider)
     {
-        app.UseStaticFiles(); // Serve uploaded images from wwwroot
+        app.UseStaticFiles();
+        app.UseMiddleware<Internal.RateLimitMiddleware>();
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
