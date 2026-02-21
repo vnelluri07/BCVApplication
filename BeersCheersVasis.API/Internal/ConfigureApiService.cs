@@ -31,6 +31,7 @@ public static class ApiConfigureApiService
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IAppUserRepository, AppUserRepository>();
+        services.AddScoped<IReactionRepository, ReactionRepository>();
 
         // Services
         services.AddScoped<IUserService, UserService>();
@@ -38,6 +39,7 @@ public static class ApiConfigureApiService
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IAppUserService, AppUserService>();
+        services.AddScoped<IReactionService, ReactionService>();
         services.AddSingleton<IAnonymousNameGenerator, AnonymousNameGenerator>();
 
         services.AddScoped<IImageService>(sp =>

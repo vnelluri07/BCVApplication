@@ -47,6 +47,7 @@ builder.Services.AddScoped<ICategoryApi, CategoryApi>();
 builder.Services.AddScoped<ICommentApi, CommentApi>();
 builder.Services.AddScoped<IAppUserApi, AppUserApi>();
 builder.Services.AddScoped<IAuthApi, AuthApi>();
+builder.Services.AddScoped<IReactionApi, ReactionApi>();
 
 // View Controllers
 builder.Services.AddScoped<UserController>();

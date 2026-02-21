@@ -11,6 +11,7 @@ public interface IdbContext
     DbSet<Category> Categories { get; }
     DbSet<Comment> Comments { get; }
     DbSet<AppUser> AppUsers { get; }
+    DbSet<Reaction> Reactions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

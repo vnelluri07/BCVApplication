@@ -13,6 +13,7 @@ public class TestDbContext : DbContext, IdbContext
     public DbSet<Category> Categories { get; set; } = null!;
     public DbSet<Comment> Comments { get; set; } = null!;
     public DbSet<AppUser> AppUsers { get; set; } = null!;
+    public DbSet<Reaction> Reactions { get; set; } = null!;
 
     public static TestDbContext Create(string? dbName = null)
     {

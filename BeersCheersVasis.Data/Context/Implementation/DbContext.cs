@@ -38,6 +38,21 @@ public class dbContext : DbContext, IdbContext
                 .HasForeignKey(s => s.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
+
+        modelBuilder.Entity<Reaction>(entity =>
+        {
+            entity.HasIndex(r => new { r.VoterKey, r.ScriptId, r.CommentId }).IsUnique();
+
+            entity.HasOne(r => r.Script)
+                .WithMany()
+                .HasForeignKey(r => r.ScriptId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(r => r.Comment)
+                .WithMany()
+                .HasForeignKey(r => r.CommentId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
     }
 
     public DbSet<User> Users => Set<User>();
@@ -45,6 +60,7 @@ public class dbContext : DbContext, IdbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
+    public DbSet<Reaction> Reactions => Set<Reaction>();
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
