@@ -1,8 +1,10 @@
 @page "/read/script/{Id:int}"
+@using BeersCheersVasis.Api.Models.Reaction
 @inject BeersCheersVasis.Api.Client.IScriptApi ScriptApi
 @inject BeersCheersVasis.Api.Client.ICommentApi CommentApi
-
+@inject BeersCheersVasis.Api.Client.IReactionApi ReactionApi
 @inject BeersCheersVasis.Api.Client.IAuthApi AuthApi
+@inject IJSRuntime JS
 
 <PageTitle>@(_script?.Title ?? "Reading") — Beers Cheers & Vasis</PageTitle>
 
@@ -35,6 +37,32 @@ else
 
         <div class="bcv-article-body editor-rendered-content">
             @((MarkupString)(_script.Content ?? ""))
+        </div>
+
+        <!-- Reactions -->
+        <div style="display:flex; align-items:center; gap:1rem; padding:1.5rem 0; border-top:1px solid var(--bcv-border); margin-top:2rem;">
+            <button class="bcv-react-btn @(_userReaction == ReactionType.SuperLike ? "bcv-react-active" : "")"
+                    @onclick="() => React(ReactionType.SuperLike)" title="Super Like">
+                🔥 <span>@_counts.SuperLikes</span>
+            </button>
+            <button class="bcv-react-btn @(_userReaction == ReactionType.Like ? "bcv-react-active" : "")"
+                    @onclick="() => React(ReactionType.Like)" title="Like">
+                👍 <span>@_counts.Likes</span>
+            </button>
+            <button class="bcv-react-btn @(_userReaction == ReactionType.Dislike ? "bcv-react-active" : "")"
+                    @onclick="() => React(ReactionType.Dislike)" title="Dislike">
+                👎 <span>@_counts.Dislikes</span>
+            </button>
+            @{ var total = _counts.SuperLikes + _counts.Likes + _counts.Dislikes; }
+            @if (total > 0)
+            {
+                <div style="flex:1; max-width:200px; height:4px; background:var(--bcv-border); border-radius:2px; overflow:hidden;">
+                    <div style="display:flex; height:100%;">
+                        <div style="width:@((_counts.SuperLikes + _counts.Likes) * 100.0 / total)%; background:#198754;"></div>
+                        <div style="width:@(_counts.Dislikes * 100.0 / total)%; background:#dc3545;"></div>
+                    </div>
+                </div>
+            }
         </div>
     </article>
 
@@ -96,16 +124,54 @@ else
     private int? _replyingTo;
     private TurnstileWidget? _turnstile;
 
+    // Reactions
+    private BeersCheersVasis.Api.Models.Reaction.ReactionCountsResponse _counts = new();
+    private BeersCheersVasis.Api.Models.Reaction.ReactionType? _userReaction;
+    private string _voterKey = "";
+
     protected override async Task OnParametersSetAsync()
     {
         _loading = true;
         try
         {
+            _voterKey = await GetOrCreateVoterKey();
             _script = await ScriptApi.GetAsync(Id);
             _comments = await CommentApi.GetByScriptAsync(Id);
+            var counts = await ReactionApi.GetScriptCountsAsync(Id, _voterKey);
+            _counts = counts;
+            _userReaction = counts.UserReaction;
         }
         catch { }
         _loading = false;
+    }
+
+    private async Task<string> GetOrCreateVoterKey()
+    {
+        try
+        {
+            var key = await JS.InvokeAsync<string>("localStorage.getItem", "bcv_voter_key");
+            if (!string.IsNullOrEmpty(key)) return key;
+            key = Guid.NewGuid().ToString("N");
+            await JS.InvokeVoidAsync("localStorage.setItem", "bcv_voter_key", key);
+            return key;
+        }
+        catch { return Guid.NewGuid().ToString("N"); }
+    }
+
+    private async Task React(BeersCheersVasis.Api.Models.Reaction.ReactionType type)
+    {
+        try
+        {
+            var result = await ReactionApi.ReactAsync(new()
+            {
+                ScriptId = Id,
+                VoterKey = _voterKey,
+                ReactionType = type
+            });
+            _counts = result;
+            _userReaction = result.UserReaction;
+        }
+        catch { }
     }
 
     private void HandleReply(int commentId)

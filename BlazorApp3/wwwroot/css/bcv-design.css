@@ -723,3 +723,24 @@ a:hover {
     margin: 0 auto;
     padding: 0 var(--bcv-space-lg);
 }
+
+/* Reaction buttons */
+.bcv-react-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--bcv-border);
+    border-radius: 20px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.15s ease;
+}
+.bcv-react-btn:hover { background: var(--bcv-bg-alt); }
+.bcv-react-btn.bcv-react-active {
+    border-color: var(--bcv-accent);
+    background: rgba(139, 90, 43, 0.08);
+    font-weight: 600;
+}
+.bcv-react-btn span { font-size: 0.85rem; }
