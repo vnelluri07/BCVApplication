@@ -5,8 +5,19 @@
 @inject BeersCheersVasis.Api.Client.IReactionApi ReactionApi
 @inject BeersCheersVasis.Api.Client.IAuthApi AuthApi
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <PageTitle>@(_script?.Title ?? "Reading") — Beers Cheers & Vasis</PageTitle>
+
+@if (_script is not null)
+{
+    <HeadContent>
+        <meta name="description" content="@GetExcerpt(_script.Content, 160)" />
+        <meta property="og:title" content="@_script.Title" />
+        <meta property="og:description" content="@GetExcerpt(_script.Content, 160)" />
+        <meta property="og:type" content="article" />
+    </HeadContent>
+}
 
 @if (_loading)
 {
@@ -32,6 +43,7 @@ else
             <h1>@_script.Title</h1>
             <div class="bcv-article-meta">
                 @(_script.PublishedDate?.ToString("MMMM d, yyyy") ?? _script.CreatedDate?.ToString("MMMM d, yyyy"))
+                · @ReadingTime(_script.Content) min read
             </div>
         </header>
 
@@ -65,6 +77,32 @@ else
             }
         </div>
     </article>
+
+    <!-- Share + Related -->
+    <div class="bcv-content" style="margin-bottom:2rem;">
+        <div style="display:flex; gap:0.75rem; align-items:center; margin-bottom:2rem;">
+            <span class="bcv-text-muted" style="font-size:0.85rem;">Share:</span>
+            <button class="bcv-btn-sm" @onclick="ShareTwitter">𝕏 Twitter</button>
+            <button class="bcv-btn-sm" @onclick="CopyLink">📋 Copy Link</button>
+            @if (_linkCopied) { <span style="font-size:0.8rem; color:#198754;">✓ Copied!</span> }
+        </div>
+
+        @if (_related?.Any() == true)
+        {
+            <h3 class="bcv-mb-md">More in @_script.CategoryName</h3>
+            <div class="bcv-card-grid" style="grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));">
+                @foreach (var r in _related.Take(3))
+                {
+                    <div class="bcv-card" @onclick="() => GoToRelated(r.Id)" style="cursor:pointer;">
+                        <div class="bcv-card-body">
+                            <div class="bcv-card-title" style="font-size:0.95rem;">@r.Title</div>
+                            <div class="bcv-card-meta">@(r.PublishedDate?.ToString("MMM d, yyyy"))</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
 
     <!-- Comments Section -->
     <section class="bcv-section-alt">
@@ -129,6 +167,8 @@ else
     private BeersCheersVasis.Api.Models.Reaction.ReactionCountsResponse _counts = new();
     private BeersCheersVasis.Api.Models.Reaction.ReactionType? _userReaction;
     private string _voterKey = "";
+    private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse>? _related;
+    private bool _linkCopied;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -141,6 +181,13 @@ else
             var counts = await ReactionApi.GetScriptCountsAsync(Id, _voterKey);
             _counts = counts;
             _userReaction = counts.UserReaction;
+
+            // Load related scripts from same category
+            if (_script?.CategoryId.HasValue == true)
+            {
+                var all = await ScriptApi.GetPublishedAsync(_script.CategoryId.Value);
+                _related = all.Where(s => s.Id != Id);
+            }
         }
         catch { }
         _loading = false;
@@ -233,4 +280,40 @@ else
         }
         _posting = false;
     }
+
+    private static int ReadingTime(string? html)
+    {
+        if (string.IsNullOrEmpty(html)) return 1;
+        var text = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+        var words = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+        return Math.Max(1, (int)Math.Ceiling(words / 200.0));
+    }
+
+    private static string GetExcerpt(string? html, int maxLen)
+    {
+        if (string.IsNullOrEmpty(html)) return "";
+        var text = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
+        return text.Length > maxLen ? text[..maxLen] + "…" : text;
+    }
+
+    private async Task ShareTwitter()
+    {
+        var url = Nav.Uri;
+        var text = Uri.EscapeDataString(_script?.Title ?? "");
+        await JS.InvokeVoidAsync("open", $"https://twitter.com/intent/tweet?text={text}&url={Uri.EscapeDataString(url)}", "_blank");
+    }
+
+    private async Task CopyLink()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Nav.Uri);
+            _linkCopied = true;
+            _ = Task.Delay(2000).ContinueWith(_ => { _linkCopied = false; InvokeAsync(StateHasChanged); });
+        }
+        catch { }
+    }
+
+    private void GoToRelated(int id) => Nav.NavigateTo($"/read/script/{id}");
 }
