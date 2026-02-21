@@ -11,6 +11,7 @@ public interface IScriptApi
     Task<ScriptResponse> CreateAsync(CreateScriptRequest request);
     Task<ScriptResponse> UpdateAsync(UpdateScriptRequest request);
     Task PublishAsync(int id);
+    Task<int> PublishAllAsync();
     Task UnpublishAsync(int id);
     Task SoftDeleteAsync(int id);
     Task SetCategoryAsync(int id, int categoryId);

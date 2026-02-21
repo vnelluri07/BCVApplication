@@ -110,6 +110,22 @@ public class ScriptRepository : IScriptRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<int> PublishAllScriptsAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        var unpublished = await _dbContext.Script
+            .Where(s => !s.IsPublished && !s.IsDeleted)
+            .ToListAsync(cancellationToken);
+        foreach (var s in unpublished)
+        {
+            s.IsPublished = true;
+            s.PublishedDate ??= now;
+            s.ModifiedDate = now;
+        }
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return unpublished.Count;
+    }
+
     public async Task UnpublishScriptAsync(int id, CancellationToken cancellationToken)
     {
         var script = await _dbContext.Script.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)

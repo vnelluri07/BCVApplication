@@ -68,6 +68,14 @@ public class ScriptController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
+    [HttpPut("publish-all")]
+    public async Task<IActionResult> PublishAllAsync(CancellationToken cancellationToken)
+    {
+        var count = await _scriptService.PublishAllScriptsAsync(cancellationToken);
+        return Ok(new { published = count });
+    }
+
+    [Authorize(Roles = "Admin")]
     [HttpPut("unpublish/{id}")]
     public async Task<IActionResult> UnpublishAsync(int id, CancellationToken cancellationToken)
     {

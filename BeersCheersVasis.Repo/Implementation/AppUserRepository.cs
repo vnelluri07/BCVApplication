@@ -83,4 +83,13 @@ public sealed class AppUserRepository : IAppUserRepository
         IsActive = entity.IsActive,
         CreatedDate = entity.CreatedDate
     };
+
+    public async Task SetRoleAsync(int id, string role, CancellationToken cancellationToken)
+    {
+        var entity = await _dbContext.AppUsers.FirstOrDefaultAsync(u => u.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException($"AppUser {id} not found");
+        entity.Role = role;
+        entity.ModifiedDate = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
 }

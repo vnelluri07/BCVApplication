@@ -7,4 +7,5 @@ public interface IAppUserRepository
     Task<AppUserResponse> GetOrCreateGoogleUserAsync(GoogleAuthRequest request, CancellationToken cancellationToken);
     Task<AppUserResponse> CreateAnonymousUserAsync(string displayName, CancellationToken cancellationToken);
     Task<AppUserResponse?> GetByIdAsync(int id, CancellationToken cancellationToken);
+    Task SetRoleAsync(int id, string role, CancellationToken cancellationToken);
 }

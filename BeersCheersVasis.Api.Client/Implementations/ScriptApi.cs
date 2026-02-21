@@ -46,6 +46,13 @@ public sealed class ScriptApi : IScriptApi
     }
 
     public async Task PublishAsync(int id) => await _httpClient.PutAsync($"Script/publish/{id}");
+
+    public async Task<int> PublishAllAsync()
+    {
+        await _httpClient.PutAsync("Script/publish-all");
+        return 0;
+    }
+
     public async Task UnpublishAsync(int id) => await _httpClient.PutAsync($"Script/unpublish/{id}");
     public async Task SoftDeleteAsync(int id) => await _httpClient.DeleteAsync($"Script/soft-delete/{id}");
     public async Task SetCategoryAsync(int id, int categoryId) => await _httpClient.PutAsync($"Script/set-category/{id}/{categoryId}");

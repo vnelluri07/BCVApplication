@@ -43,7 +43,8 @@ public class Startup
         services.AddScoped<IAuthService>(sp =>
             new AuthService(
                 sp.GetRequiredService<BeersCheersVasis.Repository.IAppUserRepository>(),
-                googleAuth.ClientId, jwt.Key, jwt.Issuer, jwt.Audience));
+                googleAuth.ClientId, jwt.Key, jwt.Issuer, jwt.Audience,
+                _configuration.GetSection("AdminEmails").Get<string[]>()));
 
         services.AddAuthorization();
     }

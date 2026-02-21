@@ -15,19 +15,23 @@ public sealed class AuthService : IAuthService
     private readonly string _jwtKey;
     private readonly string _jwtIssuer;
     private readonly string _jwtAudience;
+    private readonly HashSet<string> _adminEmails;
 
     public AuthService(
         IAppUserRepository appUserRepository,
         string googleClientId,
         string jwtKey,
         string jwtIssuer,
-        string jwtAudience)
+        string jwtAudience,
+        IEnumerable<string>? adminEmails = null)
     {
         _appUserRepository = appUserRepository;
         _googleClientId = googleClientId;
         _jwtKey = jwtKey;
         _jwtIssuer = jwtIssuer;
         _jwtAudience = jwtAudience;
+        _adminEmails = new HashSet<string>(
+            adminEmails ?? [], StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task<AuthResponse> GoogleLoginAsync(string idToken, CancellationToken cancellationToken)
@@ -44,6 +48,13 @@ public sealed class AuthService : IAuthService
             DisplayName = payload.Name,
             AvatarUrl = payload.Picture
         }, cancellationToken);
+
+        // Auto-promote configured admin emails
+        if (_adminEmails.Contains(payload.Email) && user.Role != "Admin")
+        {
+            await _appUserRepository.SetRoleAsync(user.Id, "Admin", cancellationToken);
+            user.Role = "Admin";
+        }
 
         var jwt = GenerateJwt(user);
 
