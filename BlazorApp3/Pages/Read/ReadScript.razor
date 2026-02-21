@@ -75,7 +75,8 @@ else
             {
                 @foreach (var comment in _comments)
                 {
-                    <CommentThread Comment="comment" OnReply="HandleReply" />
+                    <CommentThread Comment="comment" OnReply="HandleReply"
+                                   ReactionApi="ReactionApi" VoterKey="@_voterKey" />
                 }
             }
             else

@@ -1,4 +1,5 @@
 @using BeersCheersVasis.Api.Models.Comment
+@using BeersCheersVasis.Api.Models.Reaction
 
 <div class="bcv-comment" style="padding-left: @(Depth * 24)px;">
     <div class="bcv-comment-header">
@@ -15,7 +16,7 @@
         {
             <span class="bcv-badge" style="font-size:0.55rem; padding:0.1rem 0.35rem;">pen name</span>
         }
-        <span class="bcv-comment-date">@Comment.CreatedDate?.ToString("MMM d, yyyy")</span>
+        <span class="bcv-comment-date">@Comment.CreatedDate?.ToString("MMM d, yyyy 'at' h:mm tt")</span>
     </div>
 
     @if (Comment.IsDeleted)
@@ -25,17 +26,28 @@
     else
     {
         <p class="bcv-comment-body">@Comment.Content</p>
-        @if (Depth < 3)
-        {
-            <button class="bcv-btn-link" @onclick="() => OnReply.InvokeAsync(Comment.Id)">Reply</button>
-        }
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.25rem;">
+            <button class="bcv-react-btn bcv-react-sm @(_userReaction == ReactionType.Like ? "bcv-react-active" : "")"
+                    @onclick="() => ReactComment(ReactionType.Like)">
+                👍 @_likes
+            </button>
+            <button class="bcv-react-btn bcv-react-sm @(_userReaction == ReactionType.Dislike ? "bcv-react-active" : "")"
+                    @onclick="() => ReactComment(ReactionType.Dislike)">
+                👎 @_dislikes
+            </button>
+            @if (Depth < 3)
+            {
+                <button class="bcv-btn-link" @onclick="() => OnReply.InvokeAsync(Comment.Id)">Reply</button>
+            }
+        </div>
     }
 
     @if (Comment.Replies?.Any() == true)
     {
         @foreach (var reply in Comment.Replies)
         {
-            <CommentThread Comment="reply" Depth="Depth + 1" OnReply="OnReply" />
+            <CommentThread Comment="reply" Depth="Depth + 1" OnReply="OnReply"
+                           ReactionApi="ReactionApi" VoterKey="VoterKey" />
         }
     }
 </div>
@@ -44,4 +56,60 @@
     [Parameter] public CommentResponse Comment { get; set; } = new();
     [Parameter] public int Depth { get; set; }
     [Parameter] public EventCallback<int> OnReply { get; set; }
+    [Parameter] public BeersCheersVasis.Api.Client.IReactionApi? ReactionApi { get; set; }
+    [Parameter] public string VoterKey { get; set; } = "";
+
+    private int _likes, _dislikes;
+    private ReactionType? _userReaction;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ReactionApi is null || Comment.Id == 0) return;
+        try
+        {
+            var counts = await ReactionApi.GetScriptCountsAsync(0, null); // won't use this
+            // Use comment bulk endpoint for efficiency — but for single, just call react endpoint with GET
+        }
+        catch { }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCounts();
+    }
+
+    private async Task LoadCounts()
+    {
+        if (ReactionApi is null || Comment.Id == 0) return;
+        try
+        {
+            var results = await ReactionApi.GetCommentCountsAsync([Comment.Id], VoterKey);
+            var c = results.FirstOrDefault();
+            if (c is not null)
+            {
+                _likes = c.Likes;
+                _dislikes = c.Dislikes;
+                _userReaction = c.UserReaction;
+            }
+        }
+        catch { }
+    }
+
+    private async Task ReactComment(ReactionType type)
+    {
+        if (ReactionApi is null) return;
+        try
+        {
+            var result = await ReactionApi.ReactAsync(new ReactRequest
+            {
+                CommentId = Comment.Id,
+                VoterKey = VoterKey,
+                ReactionType = type
+            });
+            _likes = result.Likes;
+            _dislikes = result.Dislikes;
+            _userReaction = result.UserReaction;
+        }
+        catch { }
+    }
 }

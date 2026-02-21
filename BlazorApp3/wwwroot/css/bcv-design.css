@@ -744,3 +744,9 @@ a:hover {
     font-weight: 600;
 }
 .bcv-react-btn span { font-size: 0.85rem; }
+
+.bcv-react-sm {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+}
+.bcv-react-sm span { font-size: 0.75rem; }
