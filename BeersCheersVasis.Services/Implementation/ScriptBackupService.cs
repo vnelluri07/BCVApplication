@@ -13,6 +13,9 @@ public sealed class ScriptBackupService(
     {
         foreach (var provider in providers)
         {
+            var previous = await backupRepository.GetLatestAsync(payload.ScriptId, provider.ProviderName, cancellationToken);
+            var providerPayload = payload with { PreviousExternalId = previous?.ExternalId };
+
             var backup = new ScriptBackup
             {
                 ScriptId = payload.ScriptId,
@@ -23,7 +26,7 @@ public sealed class ScriptBackupService(
 
             try
             {
-                var result = await provider.BackupAsync(payload, cancellationToken);
+                var result = await provider.BackupAsync(providerPayload, cancellationToken);
                 backup.Status = result.Success ? "Success" : "Failed";
                 backup.ExternalId = result.ExternalId;
                 backup.ExternalUrl = result.ExternalUrl;

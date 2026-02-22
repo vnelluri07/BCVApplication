@@ -34,8 +34,9 @@ public sealed class GoogleDriveBackupProvider(IServiceScopeFactory scopeFactory,
 
         using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(html));
 
-        // Update existing or create new
-        var existingId = await FindFileAsync(driveService, fileName, folderId, cancellationToken);
+        // Update existing file by stored ID, or search by name as fallback
+        var existingId = payload.PreviousExternalId
+            ?? await FindFileAsync(driveService, fileName, folderId, cancellationToken);
         if (existingId is not null)
         {
             var req = driveService.Files.Update(new(), existingId, stream, "text/html");
