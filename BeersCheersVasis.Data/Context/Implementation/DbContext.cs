@@ -61,6 +61,7 @@ public class dbContext : DbContext, IdbContext
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
     public DbSet<Reaction> Reactions => Set<Reaction>();
+    public DbSet<SiteSetting> SiteSettings => Set<SiteSetting>();
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {

@@ -5,6 +5,7 @@
 @inject BeersCheersVasis.Api.Client.ICommentApi CommentApi
 @inject BeersCheersVasis.Api.Client.IAppUserApi AppUserApi
 @inject NavigationManager Nav
+@inject BeersCheersVasis.Api.Client.ISettingsApi SettingsApi
 
 <PageTitle>Admin — Beers Cheers & Vasis</PageTitle>
 
@@ -343,7 +344,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Reload();
-        _greeting = await GetGreetingFromStorage();
+        _greeting = await SettingsApi.GetAsync("greeting");
     }
 
     private async Task Reload()
@@ -409,20 +410,11 @@
         catch { }
     }
 
-    // Settings
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-
-    private async Task<string> GetGreetingFromStorage()
-    {
-        try { return await JS.InvokeAsync<string>("localStorage.getItem", "bcv_greeting") ?? ""; }
-        catch { return ""; }
-    }
-
     private async Task SaveGreeting()
     {
         try
         {
-            await JS.InvokeVoidAsync("localStorage.setItem", "bcv_greeting", _greeting);
+            await SettingsApi.SetAsync("greeting", _greeting);
             _greetingSaved = true;
             _ = Task.Delay(2000).ContinueWith(_ => { _greetingSaved = false; InvokeAsync(StateHasChanged); });
         }

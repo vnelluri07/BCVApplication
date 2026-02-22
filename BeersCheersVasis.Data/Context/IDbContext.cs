@@ -12,6 +12,7 @@ public interface IdbContext
     DbSet<Comment> Comments { get; }
     DbSet<AppUser> AppUsers { get; }
     DbSet<Reaction> Reactions { get; }
+    DbSet<SiteSetting> SiteSettings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
