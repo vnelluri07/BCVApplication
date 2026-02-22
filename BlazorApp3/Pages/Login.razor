@@ -46,7 +46,7 @@
         _error = "";
         try
         {
-            var result = await AuthApi.GoogleLoginWithCodeAsync(code, Nav.BaseUri + "google-callback");
+            var result = await AuthApi.GoogleLoginWithCodeAsync(code, Nav.BaseUri + "google-callback.html");
             await AuthState.LoginAsync(result.Token);
             Nav.NavigateTo("/admin");
         }
