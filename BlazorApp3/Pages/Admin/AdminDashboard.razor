@@ -105,7 +105,7 @@
                                             @foreach (var b in backups)
                                             {
                                                 <span title="@b.Provider: @b.Status @(b.BackedUpAt?.ToString("g"))" style="margin-right:0.3rem;">
-                                                    @(b.Status == "Success" ? "✅" : b.Status == "Pending" ? "⏳" : "❌")@b.Provider[..1]
+                                                    @(b.Status == "Success" ? "✅" : b.Status == "Pending" ? "⏳" : "❌")@(b.Provider == "GitHub" ? "GH" : "GD")
                                                 </span>
                                             }
                                         }
