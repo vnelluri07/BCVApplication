@@ -51,7 +51,7 @@
 
         window.bcvGoogleSignInPopup = function () {
             var clientId = window._bcvGoogleClientId;
-            var redirect = window.location.origin + '/google-callback';
+            var redirect = window.location.origin + '/google-callback.html';
             var url = 'https://accounts.google.com/o/oauth2/v2/auth'
                 + '?client_id=' + encodeURIComponent(clientId)
                 + '&redirect_uri=' + encodeURIComponent(redirect)
