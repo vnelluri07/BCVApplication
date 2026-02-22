@@ -19,6 +19,7 @@ public sealed class CategoryRepository : ICategoryRepository
     public async Task<IEnumerable<CategoryResponse>> GetCategoriesAsync(CancellationToken cancellationToken)
     {
         return await _dbContext.Categories
+            .Where(c => !c.IsDeleted)
             .OrderBy(c => c.SortOrder)
             .Select(c => new CategoryResponse
             {
@@ -28,6 +29,7 @@ public sealed class CategoryRepository : ICategoryRepository
                 Icon = c.Icon,
                 SortOrder = c.SortOrder,
                 IsActive = c.IsActive,
+                IsDeleted = c.IsDeleted,
                 ScriptCount = c.Scripts.Count(s => s.IsPublished && !s.IsDeleted)
             })
             .ToListAsync(cancellationToken);
@@ -35,7 +37,7 @@ public sealed class CategoryRepository : ICategoryRepository
 
     public async Task<CategoryResponse> GetCategoryAsync(int id, CancellationToken cancellationToken)
     {
-        var cat = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        var cat = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, cancellationToken);
         if (cat is null) return new CategoryResponse();
 
         return new CategoryResponse
@@ -45,7 +47,8 @@ public sealed class CategoryRepository : ICategoryRepository
             Description = cat.Description,
             Icon = cat.Icon,
             SortOrder = cat.SortOrder,
-            IsActive = cat.IsActive
+            IsActive = cat.IsActive,
+            IsDeleted = cat.IsDeleted
         };
     }
 
@@ -99,5 +102,15 @@ public sealed class CategoryRepository : ICategoryRepository
             SortOrder = entity.SortOrder,
             IsActive = entity.IsActive
         };
+    }
+
+    public async Task DeleteCategoryAsync(int id, CancellationToken cancellationToken)
+    {
+        var entity = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, cancellationToken)
+            ?? throw new ArgumentException($"Category with ID '{id}' not found.");
+
+        entity.IsDeleted = true;
+        entity.ModifiedDate = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

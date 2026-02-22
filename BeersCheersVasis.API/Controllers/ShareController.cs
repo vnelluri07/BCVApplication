@@ -68,6 +68,7 @@ public partial class ShareController : ControllerBase
     {
         if (string.IsNullOrEmpty(html)) return "This is the stage for Vasi Nelluri's madness";
         var text = StripHtmlRegex().Replace(html, " ").Trim();
+        text = System.Net.WebUtility.HtmlDecode(text);
         text = WhitespaceRegex().Replace(text, " ");
         return text.Length > maxLength ? text[..maxLength] + "…" : text;
     }

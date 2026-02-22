@@ -316,6 +316,9 @@ a:hover {
 
 .bcv-badge-success { background: var(--bcv-success); color: #fff; }
 .bcv-badge-danger { background: var(--bcv-danger); color: #fff; }
+.bcv-badge-latest { background: #e8350e; color: #fff; }
+.bcv-badge-new { background: #0d6efd; color: #fff; }
+.bcv-badge-month { background: #6f42c1; color: #fff; }
 
 /* ============================================
    Category browser (landing page)
@@ -351,6 +354,13 @@ a:hover {
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: var(--bcv-space-xs);
+}
+
+.bcv-category-desc {
+    font-size: 0.8rem;
+    color: var(--bcv-text-light);
+    margin-top: 0.25rem;
+    line-height: 1.3;
 }
 
 .bcv-category-count {

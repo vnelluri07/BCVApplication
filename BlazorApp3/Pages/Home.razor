@@ -43,6 +43,10 @@
                     <div class="bcv-category-card" @onclick="() => GoToCategory(cat.Id)">
                         <div class="bcv-category-icon">@(cat.Icon ?? "📝")</div>
                         <div class="bcv-category-name">@cat.Name</div>
+                        @if (!string.IsNullOrWhiteSpace(cat.Description))
+                        {
+                            <div class="bcv-category-desc">@cat.Description</div>
+                        }
                         <div class="bcv-category-count">@cat.ScriptCount @(cat.ScriptCount == 1 ? "piece" : "pieces")</div>
                     </div>
                 }

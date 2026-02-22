@@ -42,4 +42,11 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.UpdateCategoryAsync(request, cancellationToken);
         return Ok(result);
     }
+
+    [HttpDelete("Delete/{id}")]
+    public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        await _categoryService.DeleteCategoryAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

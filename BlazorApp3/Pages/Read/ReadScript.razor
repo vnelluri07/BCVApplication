@@ -293,6 +293,7 @@ else
     {
         if (string.IsNullOrEmpty(html)) return "";
         var text = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+        text = System.Net.WebUtility.HtmlDecode(text);
         text = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
         return text.Length > maxLen ? text[..maxLen] + "…" : text;
     }

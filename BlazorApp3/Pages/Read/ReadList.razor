@@ -51,10 +51,17 @@
                 {
                     <div class="bcv-card" @onclick="() => GoToScript(script.Id)">
                         <div class="bcv-card-body">
-                            @if (!string.IsNullOrEmpty(script.CategoryName))
-                            {
-                                <span class="bcv-badge bcv-mb-md" style="display:inline-block; margin-bottom:0.75rem;">@script.CategoryName</span>
-                            }
+                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+                                @if (!string.IsNullOrEmpty(script.CategoryName))
+                                {
+                                    <span class="bcv-badge">@script.CategoryName</span>
+                                }
+                                @{ var chip = GetFreshnessChip(script.PublishedDate ?? script.CreatedDate); }
+                                @if (chip is not null)
+                                {
+                                    <span class="bcv-badge @chip.Value.css">@chip.Value.label</span>
+                                }
+                            </div>
                             <div class="bcv-card-title">@script.Title</div>
                             <div class="bcv-card-excerpt">@GetExcerpt(script.Content)</div>
                             <div class="bcv-card-meta">
@@ -123,10 +130,22 @@
         }
     }
 
+    private static (string label, string css)? GetFreshnessChip(DateTime? date)
+    {
+        if (date is null) return null;
+        var age = DateTime.UtcNow - date.Value;
+        if (age.TotalDays <= 7) return ("🔥 Latest", "bcv-badge-latest");
+        if (age.TotalDays <= 15) return ("✨ New", "bcv-badge-new");
+        if (date.Value.Year == DateTime.UtcNow.Year && date.Value.Month == DateTime.UtcNow.Month)
+            return ("📅 This Month", "bcv-badge-month");
+        return null;
+    }
+
     private static string GetExcerpt(string? html)
     {
         if (string.IsNullOrEmpty(html)) return "";
         var text = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ");
+        text = System.Net.WebUtility.HtmlDecode(text);
         text = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
         return text.Length > 160 ? text[..160] + "…" : text;
     }

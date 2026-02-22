@@ -32,4 +32,9 @@ public sealed class CategoryApi : ICategoryApi
     {
         return await _httpClient.PutAsJsonAsync<UpdateCategoryRequest, CategoryResponse>("Category/Update", request);
     }
+
+    public async Task DeleteAsync(int id)
+    {
+        await _httpClient.DeleteAsync($"Category/Delete/{id}");
+    }
 }

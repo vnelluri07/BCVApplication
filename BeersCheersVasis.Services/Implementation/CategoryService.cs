@@ -34,4 +34,10 @@ public sealed class CategoryService : ICategoryService
         ArgumentNullException.ThrowIfNull(request);
         return await _categoryRepository.UpdateCategoryAsync(request, cancellationToken);
     }
+
+    public async Task DeleteCategoryAsync(int id, CancellationToken cancellationToken)
+    {
+        if (id == 0) throw new ArgumentNullException(nameof(id));
+        await _categoryRepository.DeleteCategoryAsync(id, cancellationToken);
+    }
 }
