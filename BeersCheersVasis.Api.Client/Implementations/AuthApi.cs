@@ -15,6 +15,12 @@ public sealed class AuthApi : IAuthApi
             new { IdToken = idToken, TurnstileToken = turnstileToken });
     }
 
+    public async Task<AuthLoginResponse> GoogleLoginWithCodeAsync(string code, string redirectUri)
+    {
+        return await _httpClient.PostAsJsonAsync<object, AuthLoginResponse>("Auth/google-code",
+            new { Code = code, RedirectUri = redirectUri });
+    }
+
     public async Task<bool> VerifyTurnstileAsync(string token)
     {
         var result = await _httpClient.PostAsJsonAsync<object, TurnstileResult>("Auth/verify-turnstile",

@@ -42,28 +42,39 @@
     <script src="lib/tinymce/tinymce.min.js"></script>
     <script src="js/editor-helpers.js"></script>
 
-    <!-- Google Sign-In -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Google Sign-In (OAuth 2.0 popup flow - works over HTTP) -->
+    <script>
+        window.bcvInitGoogleSignIn = function (clientId, dotnetRef) {
+            window._bcvGoogleClientId = clientId;
+            window._bcvDotnetRef = dotnetRef;
+        };
+
+        window.bcvGoogleSignInPopup = function () {
+            var clientId = window._bcvGoogleClientId;
+            var redirect = window.location.origin + '/google-callback';
+            var url = 'https://accounts.google.com/o/oauth2/v2/auth'
+                + '?client_id=' + encodeURIComponent(clientId)
+                + '&redirect_uri=' + encodeURIComponent(redirect)
+                + '&response_type=code'
+                + '&scope=openid%20email%20profile'
+                + '&prompt=select_account';
+
+            var w = 500, h = 600;
+            var left = (screen.width - w) / 2, top = (screen.height - h) / 2;
+            window.open(url, 'GoogleSignIn', 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top);
+        };
+
+        window.bcvGoogleAuthCallback = function (code) {
+            if (window._bcvDotnetRef) {
+                window._bcvDotnetRef.invokeMethodAsync('OnGoogleAuthCode', code);
+            }
+        };
+    </script>
 
     <!-- Cloudflare Turnstile -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 
     <script>
-        // Google Sign-In init
-        window.bcvInitGoogleSignIn = function (clientId, dotnetRef) {
-            if (!google || !google.accounts) {
-                setTimeout(() => bcvInitGoogleSignIn(clientId, dotnetRef), 200);
-                return;
-            }
-            google.accounts.id.initialize({
-                client_id: clientId,
-                callback: (response) => dotnetRef.invokeMethodAsync('OnGoogleSignIn', response.credential)
-            });
-            google.accounts.id.renderButton(document.getElementById('google-signin-btn'), {
-                theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular'
-            });
-        };
-
         // Turnstile
         window.bcvRenderTurnstile = function (elementId, siteKey) {
             if (!window.turnstile) {

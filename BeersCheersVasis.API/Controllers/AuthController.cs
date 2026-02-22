@@ -29,6 +29,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("google-code")]
+    public async Task<IActionResult> GoogleLoginWithCodeAsync([FromBody] GoogleCodeRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.GoogleLoginWithCodeAsync(request.Code, request.RedirectUri, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpPost("verify-turnstile")]
     public async Task<IActionResult> VerifyTurnstileAsync([FromBody] TurnstileRequest request, CancellationToken cancellationToken)
     {
@@ -41,6 +48,12 @@ public sealed class GoogleLoginRequest
 {
     public string IdToken { get; set; } = string.Empty;
     public string? TurnstileToken { get; set; }
+}
+
+public sealed class GoogleCodeRequest
+{
+    public string Code { get; set; } = string.Empty;
+    public string RedirectUri { get; set; } = string.Empty;
 }
 
 public sealed class TurnstileRequest

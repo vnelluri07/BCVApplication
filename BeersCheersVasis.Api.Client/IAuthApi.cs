@@ -3,6 +3,7 @@ namespace BeersCheersVasis.Api.Client;
 public interface IAuthApi
 {
     Task<AuthLoginResponse> GoogleLoginAsync(string idToken, string? turnstileToken = null);
+    Task<AuthLoginResponse> GoogleLoginWithCodeAsync(string code, string redirectUri);
     Task<bool> VerifyTurnstileAsync(string token);
 }
 

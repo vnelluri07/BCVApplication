@@ -17,7 +17,9 @@
             <p style="color:var(--bcv-danger); margin-bottom:1rem;">@_error</p>
         }
 
-        <div id="google-signin-btn" style="display:inline-block;"></div>
+        <button class="bcv-btn bcv-btn-primary" @onclick="SignInWithGoogle" style="padding:0.75rem 2rem;">
+            🔐 Sign in with Google
+        </button>
     </div>
 </section>
 
@@ -33,17 +35,22 @@
         }
     }
 
+    private async Task SignInWithGoogle()
+    {
+        await JS.InvokeVoidAsync("bcvGoogleSignInPopup");
+    }
+
     [JSInvokable]
-    public async Task OnGoogleSignIn(string idToken)
+    public async Task OnGoogleAuthCode(string code)
     {
         _error = "";
         try
         {
-            var result = await AuthApi.GoogleLoginAsync(idToken);
+            var result = await AuthApi.GoogleLoginWithCodeAsync(code, Nav.BaseUri + "google-callback");
             await AuthState.LoginAsync(result.Token);
             Nav.NavigateTo("/admin");
         }
-        catch (Exception ex)
+        catch
         {
             _error = "Sign in failed. Make sure your account has admin access.";
         }
