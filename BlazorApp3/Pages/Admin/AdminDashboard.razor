@@ -19,7 +19,7 @@
                 <div class="bcv-text-muted" style="font-size:0.8rem;">Total Scripts</div>
             </div>
             <div class="bcv-card" style="text-align:center; padding:1.25rem;">
-                <div style="font-size:2rem; font-weight:700; color:#198754;">@_allScripts.Count(s => s.IsPublished)</div>
+                <div style="font-size:2rem; font-weight:700; color:var(--bcv-success);">@_allScripts.Count(s => s.IsPublished)</div>
                 <div class="bcv-text-muted" style="font-size:0.8rem;">Published</div>
             </div>
             <div class="bcv-card" style="text-align:center; padding:1.25rem;">
@@ -93,8 +93,8 @@
                                     <td>@s.Title</td>
                                     <td>@(s.CategoryName ?? "—")</td>
                                     <td>
-                                        @if (s.IsDeleted) { <span class="bcv-badge" style="background:#dc3545;color:#fff;">Deleted</span> }
-                                        else if (s.IsPublished) { <span class="bcv-badge" style="background:#198754;color:#fff;">Published</span> }
+                                        @if (s.IsDeleted) { <span class="bcv-badge bcv-badge-danger">Deleted</span> }
+                                        else if (s.IsPublished) { <span class="bcv-badge bcv-badge-success">Published</span> }
                                         else { <span class="bcv-badge">Draft</span> }
                                     </td>
                                     <td style="white-space:nowrap;">@(s.ModifiedDate?.ToString("MMM d, yyyy") ?? s.CreatedDate?.ToString("MMM d, yyyy"))</td>
@@ -251,7 +251,7 @@
                                         <span class="bcv-badge" style="@(u.Role == "Admin" ? "background:var(--bcv-accent);color:#fff;" : "")">@u.Role</span>
                                     </td>
                                     <td>
-                                        <span style="color:@(u.IsActive ? "#198754" : "#dc3545");">@(u.IsActive ? "Active" : "Inactive")</span>
+                                        <span style="color:var(@(u.IsActive ? "--bcv-success" : "--bcv-danger"));">@(u.IsActive ? "Active" : "Inactive")</span>
                                     </td>
                                     <td style="white-space:nowrap;">@u.CreatedDate?.ToString("MMM d, yyyy")</td>
                                     <td style="white-space:nowrap;">

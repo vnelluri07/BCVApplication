@@ -17,4 +17,5 @@ public interface IScriptRepository
     Task RestoreScriptAsync(int id, CancellationToken cancellationToken);
     Task SetCategoryAsync(int id, int categoryId, CancellationToken cancellationToken);
     Task ScheduleScriptAsync(int id, DateTime publishDate, CancellationToken cancellationToken);
+    Task<int> PublishScheduledScriptsAsync(CancellationToken cancellationToken);
 }

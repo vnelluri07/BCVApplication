@@ -314,6 +314,9 @@ a:hover {
     border-radius: 2px;
 }
 
+.bcv-badge-success { background: var(--bcv-success); color: #fff; }
+.bcv-badge-danger { background: var(--bcv-danger); color: #fff; }
+
 /* ============================================
    Category browser (landing page)
    ============================================ */
@@ -599,6 +602,21 @@ a:hover {
     font-size: 0.75rem;
     border: 1px solid var(--bcv-border);
     font-family: var(--bcv-font-body);
+    background: var(--bcv-bg);
+    color: var(--bcv-text);
+}
+
+/* Admin inputs */
+.bcv-section input[type="text"],
+.bcv-section input[type="search"],
+.bcv-section input:not([type]),
+.bcv-section select {
+    background: var(--bcv-bg);
+    color: var(--bcv-text);
+}
+
+[data-theme="dark"] .bcv-nav-links.open {
+    background: var(--bcv-bg);
 }
 
 /* ============================================
@@ -730,12 +748,43 @@ a:hover {
     font-size: 0.95rem;
     resize: vertical;
     transition: border-color 0.2s ease;
+    background: var(--bcv-bg);
+    color: var(--bcv-text);
 }
 
 .bcv-textarea:focus {
     outline: none;
     border-color: var(--bcv-text);
 }
+
+/* Input */
+.bcv-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--bcv-border);
+    font-family: var(--bcv-font-body);
+    font-size: 0.95rem;
+    background: var(--bcv-bg);
+    color: var(--bcv-text);
+    width: 100%;
+    transition: border-color 0.2s ease;
+}
+
+.bcv-input:focus { outline: none; border-color: var(--bcv-text); }
+.bcv-input-lg { font-size: 1.25rem; padding: 0.75rem; }
+
+/* Editor wrapper */
+.bcv-editor-wrap {
+    padding: 1.5rem;
+    background: var(--bcv-bg-alt);
+    border: 1px solid var(--bcv-border);
+    border-radius: 4px;
+}
+
+/* Save indicator */
+.bcv-save-indicator { font-style: italic; font-size: 0.85rem; }
+.bcv-save-indicator.saving { color: #ff9800; }
+.bcv-save-indicator.saved { color: var(--bcv-success); }
+.bcv-save-indicator.failed { color: var(--bcv-danger); }
 
 /* ============================================
    Content Width

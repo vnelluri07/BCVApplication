@@ -47,6 +47,7 @@ public class Startup
                 _configuration.GetSection("AdminEmails").Get<string[]>()));
 
         services.AddAuthorization();
+        services.AddHostedService<Internal.ScriptSchedulerService>();
     }
 
     public void Configure(IApplicationBuilder app, IApiVersionDescriptionProvider provider)

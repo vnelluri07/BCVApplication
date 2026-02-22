@@ -5,42 +5,38 @@
 @using TinyMCE.Blazor
 @implements IDisposable
 
-<div class="page-container">
-    <div class="title-save-row">
-        <MudText Typo="Typo.h5" Class="page-title">Create Script</MudText>
-        <MudText Typo="Typo.body2" Class="@SaveIndicatorClass">@saveStatusText</MudText>
+<PageTitle>Create Script — Beers Cheers & Vasis</PageTitle>
+
+<section class="bcv-section">
+    <div class="bcv-container" style="max-width:960px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h1>Create Script</h1>
+            <span class="bcv-save-indicator @SaveIndicatorClass">@saveStatusText</span>
+        </div>
+
+        <div class="bcv-editor-wrap">
+            <input type="text" placeholder="Title" class="bcv-input bcv-input-lg"
+                   @bind="title" @bind:event="oninput" @bind:after="OnContentChanged" />
+
+            <h3 class="bcv-mt-md bcv-mb-md">Script / Content</h3>
+
+            <Editor ScriptSrc="lib/tinymce/tinymce.min.js"
+                    Id="bcv-editor"
+                    @bind-Value="htmlContent"
+                    Conf="@editorConf"
+                    ClassName="bcv-editor" />
+
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+                <button class="bcv-btn bcv-btn-sm" @onclick="OpenEmbedDialog">🔗 Embed Link</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+                <span class="bcv-text-muted" style="font-size:0.85rem;">@WordCount words</span>
+                <button class="bcv-btn bcv-btn-primary" @onclick="OnPublishClick">Publish</button>
+            </div>
+        </div>
     </div>
-
-    <MudPaper Class="mud-paper rounded editor-container mt-4">
-        <MudTextField T="string"
-                      Class="title-field"
-                      Placeholder="Title"
-                      FullWidth="true"
-                      Immediate="true"
-                      @bind-Value="title"
-                      @bind-Value:after="OnContentChanged" />
-
-        <MudText Typo="Typo.h6" Class="mt-4 mb-2">Script / Content</MudText>
-
-        <Editor ScriptSrc="lib/tinymce/tinymce.min.js"
-                Id="bcv-editor"
-                @bind-Value="htmlContent"
-                Conf="@editorConf"
-                ClassName="bcv-editor" />
-
-        <div class="editor-actions mt-2">
-            <MudButton OnClick="OpenEmbedDialog" Variant="Variant.Outlined" Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Link" Size="Size.Small">
-                Embed Link
-            </MudButton>
-        </div>
-
-        <div class="word-count-publish mt-3">
-            <MudText Typo="Typo.body2" Class="word-count">@WordCount words</MudText>
-            <MudButton OnClick="@OnPublishClick" Color="Color.Secondary" Variant="Variant.Filled">Publish</MudButton>
-        </div>
-    </MudPaper>
-</div>
+</section>
 
 @code {
     [Inject] private ScriptController Controller { get; set; } = default!;
@@ -60,7 +56,7 @@
     private const int DebounceMs = 500;
 
     private bool _saveFailed;
-    private string SaveIndicatorClass => _isSaving ? "save-indicator saving" : _saveFailed ? "save-indicator failed" : "save-indicator saved";
+    private string SaveIndicatorClass => _isSaving ? "saving" : _saveFailed ? "failed" : "saved";
 
     private Dictionary<string, object> editorConf = new()
     {
@@ -205,7 +201,6 @@
         var response = await Controller.CreateScript(request);
         Snackbar.Add($"Published: {response.Title}", Severity.Success);
 
-        // Clear state after publish
         await State.ClearAsync();
     }
 
@@ -214,67 +209,3 @@
         _debounceTimer?.Dispose();
     }
 }
-
-<style>
-    .page-container {
-        padding-top: 4em;
-        max-width: 960px;
-        margin: 0 auto;
-    }
-
-    .title-save-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .save-indicator {
-        font-style: italic;
-        transition: opacity 0.3s ease;
-    }
-
-    .save-indicator.saving {
-        color: #ff9800;
-    }
-
-    .save-indicator.saved {
-        color: #4caf50;
-    }
-
-    .save-indicator.failed {
-        color: #f44336;
-    }
-
-    .editor-container {
-        padding: 24px;
-        background-color: #f7f7f7;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .title-field {
-        padding: 10px;
-        font-size: 20px;
-        height: 55px;
-        width: 100%;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: #ffffff;
-        margin-bottom: 1em;
-    }
-
-    .editor-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .word-count {
-        color: #555;
-    }
-
-    .word-count-publish {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-</style>

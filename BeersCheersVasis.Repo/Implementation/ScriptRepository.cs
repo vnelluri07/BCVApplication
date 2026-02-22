@@ -172,6 +172,27 @@ public class ScriptRepository : IScriptRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<int> PublishScheduledScriptsAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        var due = await _dbContext.Script
+            .Where(s => !s.IsPublished && !s.IsDeleted && s.ScheduledPublishDate.HasValue && s.ScheduledPublishDate <= now)
+            .ToListAsync(cancellationToken);
+
+        foreach (var script in due)
+        {
+            script.IsPublished = true;
+            script.PublishedDate = now;
+            script.ScheduledPublishDate = null;
+            script.ModifiedDate = now;
+        }
+
+        if (due.Count > 0)
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return due.Count;
+    }
+
     private static ScriptResponse MapToResponse(Script s) => new()
     {
         Id = s.Id,
