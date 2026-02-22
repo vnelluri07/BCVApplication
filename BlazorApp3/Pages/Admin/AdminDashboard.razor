@@ -165,17 +165,21 @@
             {
                 <table class="bcv-admin-table">
                     <thead>
-                        <tr><th>Icon</th><th>Name</th><th>Description</th><th>Scripts</th><th>Actions</th></tr>
+                        <tr><th>Icon</th><th>Name</th><th>Description</th><th>Scripts</th><th>Status</th><th>Actions</th></tr>
                     </thead>
                     <tbody>
                         @foreach (var c in _categories)
                         {
-                            <tr>
+                            <tr style="@(c.IsActive ? "" : "opacity:0.5;")">
                                 <td>@c.Icon</td>
                                 <td>@c.Name</td>
                                 <td>@c.Description</td>
                                 <td>@c.ScriptCount</td>
-                                <td><button class="bcv-btn-sm" @onclick="() => EditCategory(c)">Edit</button></td>
+                                <td><span class="bcv-badge @(c.IsActive ? "bcv-badge-success" : "bcv-badge-danger")">@(c.IsActive ? "Active" : "Inactive")</span></td>
+                                <td style="display:flex; gap:0.3rem;">
+                                    <button class="bcv-btn-sm" @onclick="() => EditCategory(c)">Edit</button>
+                                    <button class="bcv-btn-sm" @onclick="() => ToggleCategoryActive(c)">@(c.IsActive ? "Deactivate" : "Activate")</button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -396,13 +400,26 @@
 
     private void CancelCatEdit() { _editCatId = null; _catName = _catIcon = _catDesc = ""; }
 
+    private async Task ToggleCategoryActive(BeersCheersVasis.Api.Models.Category.CategoryResponse c)
+    {
+        try
+        {
+            if (c.IsActive)
+                await CategoryApi.DeleteAsync(c.Id);
+            else
+                await CategoryApi.UpdateAsync(new() { Id = c.Id, Name = c.Name, Icon = c.Icon, Description = c.Description, IsActive = true });
+            _categories = await CategoryApi.ListAsync();
+        }
+        catch { }
+    }
+
     private async Task SaveCategory()
     {
         if (string.IsNullOrWhiteSpace(_catName)) return;
         try
         {
             if (_editCatId.HasValue)
-                await CategoryApi.UpdateAsync(new() { Id = _editCatId.Value, Name = _catName, Icon = _catIcon, Description = _catDesc, IsActive = true });
+                await CategoryApi.UpdateAsync(new() { Id = _editCatId.Value, Name = _catName, Icon = _catIcon, Description = _catDesc, IsActive = _categories.First(c => c.Id == _editCatId.Value).IsActive });
             else
                 await CategoryApi.CreateAsync(new() { Name = _catName, Icon = _catIcon, Description = _catDesc });
             CancelCatEdit();
