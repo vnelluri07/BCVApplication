@@ -32,10 +32,6 @@ public sealed class Category
     public bool IsActive { get; set; }
 
     [Required]
-    [Column("IS_DELETED")]
-    public bool IsDeleted { get; set; }
-
-    [Required]
     [Column("CREATED_DATE", TypeName = "DATETIME")]
     public DateTime? CreatedDate { get; set; }
 

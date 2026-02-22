@@ -76,7 +76,7 @@ namespace BeersCheersVasis.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppUsers");
+                    b.ToTable("AppUsers", (string)null);
                 });
 
             modelBuilder.Entity("BeersCheersVasis.Data.Entities.Category", b =>
@@ -106,10 +106,6 @@ namespace BeersCheersVasis.Data.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("IS_ACTIVE");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnName("IS_DELETED");
-
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("DATETIME")
                         .HasColumnName("MODIFIED_DATE");
@@ -126,7 +122,7 @@ namespace BeersCheersVasis.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("BeersCheersVasis.Data.Entities.Comment", b =>
@@ -176,7 +172,7 @@ namespace BeersCheersVasis.Data.Migrations
 
                     b.HasIndex("ScriptId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("BeersCheersVasis.Data.Entities.Reaction", b =>
@@ -220,7 +216,7 @@ namespace BeersCheersVasis.Data.Migrations
                         .IsUnique()
                         .HasFilter("[SCRIPT_ID] IS NOT NULL AND [COMMENT_ID] IS NOT NULL");
 
-                    b.ToTable("Reactions");
+                    b.ToTable("Reactions", (string)null);
                 });
 
             modelBuilder.Entity("BeersCheersVasis.Data.Entities.Script", b =>
@@ -286,7 +282,7 @@ namespace BeersCheersVasis.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Script");
+                    b.ToTable("Script", (string)null);
                 });
 
             modelBuilder.Entity("BeersCheersVasis.Data.Entities.SiteSetting", b =>
@@ -301,7 +297,7 @@ namespace BeersCheersVasis.Data.Migrations
 
                     b.HasKey("Key");
 
-                    b.ToTable("SiteSettings");
+                    b.ToTable("SiteSettings", (string)null);
                 });
 
             modelBuilder.Entity("BeersCheersVasis.Data.Entities.User", b =>
@@ -359,7 +355,7 @@ namespace BeersCheersVasis.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("BeersCheersVasis.Data.Entities.Comment", b =>
