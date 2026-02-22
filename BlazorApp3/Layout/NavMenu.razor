@@ -1,5 +1,6 @@
 @inject NavigationManager Nav
 @inject BlazorApp3.Services.BcvAuthStateProvider AuthState
+@inject IJSRuntime JS
 
 <nav class="bcv-nav">
     <div class="bcv-nav-inner">
@@ -23,13 +24,36 @@
                     <li><NavLink href="/login">Sign In</NavLink></li>
                 </NotAuthorized>
             </AuthorizeView>
+            <li>
+                <a href="javascript:void(0)" @onclick="ToggleTheme" style="cursor:pointer; font-size:1.2rem;" title="Toggle dark mode">
+                    @(_isDark ? "☀️" : "🌙")
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
 
 @code {
     private bool menuOpen;
+    private bool _isDark;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        var theme = await JS.InvokeAsync<string>("localStorage.getItem", "bcv-theme");
+        _isDark = theme == "dark";
+        await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme','{(_isDark ? "dark" : "light")}')");
+        StateHasChanged();
+    }
+
     private void ToggleMenu() => menuOpen = !menuOpen;
+
+    private async Task ToggleTheme()
+    {
+        _isDark = !_isDark;
+        var theme = _isDark ? "dark" : "light";
+        await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme','{theme}');localStorage.setItem('bcv-theme','{theme}')");
+    }
 
     private async Task Logout()
     {
