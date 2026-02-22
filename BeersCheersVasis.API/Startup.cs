@@ -53,9 +53,11 @@ public class Startup
     {
         app.UseExceptionHandler(err => err.Run(async context =>
         {
+            var ex = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
             context.Response.StatusCode = 500;
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync("{\"error\":\"An unexpected error occurred.\"}");
+            var msg = ex?.Message ?? "An unexpected error occurred.";
+            await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { error = msg }));
         }));
         app.UseStaticFiles();
         app.UseMiddleware<Internal.RateLimitMiddleware>();
