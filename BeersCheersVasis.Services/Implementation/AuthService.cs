@@ -85,13 +85,18 @@ public sealed class AuthService : IAuthService
             ?? throw new InvalidOperationException("Failed to parse Google token response.");
 
         // Validate the ID token and proceed same as GSI flow
-        return await GoogleLoginAsync(tokens.IdToken, cancellationToken);
+        var authResponse = await GoogleLoginAsync(tokens.IdToken, cancellationToken);
+        authResponse.GoogleRefreshToken = tokens.RefreshToken;
+        return authResponse;
     }
 
     private sealed class GoogleTokenResponse
     {
         [JsonPropertyName("id_token")]
         public string IdToken { get; set; } = "";
+
+        [JsonPropertyName("refresh_token")]
+        public string? RefreshToken { get; set; }
     }
 
     private string GenerateJwt(AppUserResponse user)

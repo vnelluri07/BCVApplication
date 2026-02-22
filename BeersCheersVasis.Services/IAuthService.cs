@@ -12,4 +12,5 @@ public sealed class AuthResponse
 {
     public string Token { get; set; } = string.Empty;
     public AppUserResponse User { get; set; } = new();
+    public string? GoogleRefreshToken { get; set; }
 }

@@ -1,12 +1,16 @@
+using BeersCheersAndVasis.UI.Data.Context;
 using BeersCheersVasis.API.Configuration;
 using BeersCheersVasis.Services;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace BeersCheersVasis.API.Internal;
 
-public sealed class GoogleDriveBackupProvider(BackupSettings settings) : IBackupProvider
+public sealed class GoogleDriveBackupProvider(IServiceScopeFactory scopeFactory, BackupSettings settings, GoogleAuthSettings googleAuth) : IBackupProvider
 {
     private readonly GoogleDriveBackupSettings _cfg = settings.GoogleDrive;
 
@@ -14,12 +18,22 @@ public sealed class GoogleDriveBackupProvider(BackupSettings settings) : IBackup
 
     public async Task<BackupResult> BackupAsync(BackupPayload payload, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_cfg.ServiceAccountJson))
-            return new BackupResult(false, ErrorMessage: "Google Drive backup not configured");
+        // Get stored refresh token from SiteSettings
+        using var scope = scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<IdbContext>();
+        var setting = await db.SiteSettings.FirstOrDefaultAsync(s => s.Key == "google_drive_refresh_token", cancellationToken);
 
-        var credential = GoogleCredential
-            .FromJson(_cfg.ServiceAccountJson)
-            .CreateScoped(DriveService.Scope.DriveFile);
+        if (setting is null || string.IsNullOrEmpty(setting.Value))
+            return new BackupResult(false, ErrorMessage: "Google Drive not configured — admin must log in first");
+
+        var credential = new UserCredential(
+            new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = new ClientSecrets { ClientId = googleAuth.ClientId, ClientSecret = googleAuth.ClientSecret },
+                Scopes = [DriveService.Scope.DriveFile]
+            }),
+            "admin",
+            new TokenResponse { RefreshToken = setting.Value });
 
         using var driveService = new DriveService(new BaseClientService.Initializer
         {
@@ -30,7 +44,7 @@ public sealed class GoogleDriveBackupProvider(BackupSettings settings) : IBackup
         var html = BuildHtml(payload);
         var fileName = $"{payload.ScriptId:D4} - {payload.Title}";
 
-        // Check if file already exists (by name in folder)
+        // Check if file already exists
         var existingId = await FindExistingFileAsync(driveService, fileName, cancellationToken);
 
         using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(html));
