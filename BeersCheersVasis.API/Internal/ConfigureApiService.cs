@@ -32,6 +32,7 @@ public static class ApiConfigureApiService
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IAppUserRepository, AppUserRepository>();
         services.AddScoped<IReactionRepository, ReactionRepository>();
+        services.AddScoped<IScriptBackupRepository, ScriptBackupRepository>();
 
         // Services
         services.AddScoped<IUserService, UserService>();

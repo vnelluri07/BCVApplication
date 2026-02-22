@@ -42,7 +42,7 @@ public sealed class ScriptService : IScriptService
     public async Task PublishScriptAsync(int id, CancellationToken cancellationToken)
         => await _scriptRepository.PublishScriptAsync(id, cancellationToken);
 
-    public async Task<int> PublishAllScriptsAsync(CancellationToken cancellationToken)
+    public async Task<List<int>> PublishAllScriptsAsync(CancellationToken cancellationToken)
         => await _scriptRepository.PublishAllScriptsAsync(cancellationToken);
 
     public async Task UnpublishScriptAsync(int id, CancellationToken cancellationToken)

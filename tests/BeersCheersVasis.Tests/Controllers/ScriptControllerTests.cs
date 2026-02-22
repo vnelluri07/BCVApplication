@@ -2,6 +2,7 @@ using BeersCheersVasis.Api.Models.Script;
 using BeersCheersVasis.API.Controllers;
 using BeersCheersVasis.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace BeersCheersVasis.Tests.Controllers;
@@ -9,12 +10,14 @@ namespace BeersCheersVasis.Tests.Controllers;
 public class ScriptControllerTests
 {
     private readonly Mock<IScriptService> _mockService;
+    private readonly Mock<IServiceScopeFactory> _mockScopeFactory;
     private readonly ScriptController _sut;
 
     public ScriptControllerTests()
     {
         _mockService = new Mock<IScriptService>();
-        _sut = new ScriptController(_mockService.Object);
+        _mockScopeFactory = new Mock<IServiceScopeFactory>();
+        _sut = new ScriptController(_mockService.Object, _mockScopeFactory.Object);
     }
 
     // --- GetAllScripts ---

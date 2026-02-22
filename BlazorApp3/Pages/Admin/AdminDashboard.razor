@@ -84,7 +84,7 @@
                         <thead>
                             <tr>
                                 <th style="width:2rem;"><input type="checkbox" @onchange="ToggleSelectAll" checked="@_allFiltered" /></th>
-                                <th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th>
+                                <th>Title</th><th>Category</th><th>Status</th><th>Backup</th><th>Date</th><th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -98,6 +98,18 @@
                                         @if (s.IsDeleted) { <span class="bcv-badge bcv-badge-danger">Deleted</span> }
                                         else if (s.IsPublished) { <span class="bcv-badge bcv-badge-success">Published</span> }
                                         else { <span class="bcv-badge">Draft</span> }
+                                    </td>
+                                    <td style="white-space:nowrap; font-size:0.8rem;">
+                                        @if (s.IsPublished && _backupStatus.TryGetValue(s.Id, out var backups))
+                                        {
+                                            @foreach (var b in backups)
+                                            {
+                                                <span title="@b.Provider: @b.Status @(b.BackedUpAt?.ToString("g"))" style="margin-right:0.3rem;">
+                                                    @(b.Status == "Success" ? "✅" : b.Status == "Pending" ? "⏳" : "❌")@b.Provider[..1]
+                                                </span>
+                                            }
+                                        }
+                                        else if (s.IsPublished) { <span class="bcv-text-muted">—</span> }
                                     </td>
                                     <td style="white-space:nowrap;">@(s.ModifiedDate?.ToString("MMM d, yyyy") ?? s.CreatedDate?.ToString("MMM d, yyyy"))</td>
                                     <td style="white-space:nowrap;">
@@ -315,6 +327,10 @@
     private int? _editCatId;
     private string _catName = "", _catIcon = "", _catDesc = "";
 
+    // Backup status
+    private Dictionary<int, List<BackupStatusItem>> _backupStatus = new();
+    private sealed record BackupStatusItem(string Provider, string Status, DateTime? BackedUpAt);
+
     // Settings
     private string _greeting = "";
     private bool _greetingSaved;
@@ -358,6 +374,29 @@
         try { _categories = await CategoryApi.ListAsync(); } catch { }
         try { _allComments = await CommentApi.GetAllAsync(); } catch { }
         try { _allUsers = await AppUserApi.GetAllAsync(); } catch { }
+        _ = LoadBackupStatusAsync();
+    }
+
+    private async Task LoadBackupStatusAsync()
+    {
+        var published = _allScripts.Where(s => s.IsPublished).Select(s => s.Id).ToList();
+        var dict = new Dictionary<int, List<BackupStatusItem>>();
+        foreach (var id in published)
+        {
+            try
+            {
+                var backups = await ScriptApi.GetBackupsAsync(id);
+                var latest = backups
+                    .GroupBy(b => b.Provider)
+                    .Select(g => g.OrderByDescending(b => b.BackedUpAt).First())
+                    .Select(b => new BackupStatusItem(b.Provider, b.Status, b.BackedUpAt))
+                    .ToList();
+                if (latest.Count > 0) dict[id] = latest;
+            }
+            catch { }
+        }
+        _backupStatus = dict;
+        StateHasChanged();
     }
 
     // Script actions

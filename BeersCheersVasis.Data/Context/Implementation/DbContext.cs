@@ -62,6 +62,7 @@ public class dbContext : DbContext, IdbContext
     public DbSet<AppUser> AppUsers => Set<AppUser>();
     public DbSet<Reaction> Reactions => Set<Reaction>();
     public DbSet<SiteSetting> SiteSettings => Set<SiteSetting>();
+    public DbSet<ScriptBackup> ScriptBackups => Set<ScriptBackup>();
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {

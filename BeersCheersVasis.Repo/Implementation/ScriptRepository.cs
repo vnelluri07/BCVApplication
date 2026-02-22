@@ -110,7 +110,7 @@ public class ScriptRepository : IScriptRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<int> PublishAllScriptsAsync(CancellationToken cancellationToken)
+    public async Task<List<int>> PublishAllScriptsAsync(CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
         var unpublished = await _dbContext.Script
@@ -123,7 +123,7 @@ public class ScriptRepository : IScriptRepository
             s.ModifiedDate = now;
         }
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return unpublished.Count;
+        return unpublished.Select(s => s.Id).ToList();
     }
 
     public async Task UnpublishScriptAsync(int id, CancellationToken cancellationToken)
@@ -172,7 +172,7 @@ public class ScriptRepository : IScriptRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<int> PublishScheduledScriptsAsync(CancellationToken cancellationToken)
+    public async Task<List<int>> PublishScheduledScriptsAsync(CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
         var due = await _dbContext.Script
@@ -190,7 +190,7 @@ public class ScriptRepository : IScriptRepository
         if (due.Count > 0)
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return due.Count;
+        return due.Select(s => s.Id).ToList();
     }
 
     private static ScriptResponse MapToResponse(Script s) => new()

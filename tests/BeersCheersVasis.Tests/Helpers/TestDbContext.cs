@@ -15,6 +15,7 @@ public class TestDbContext : DbContext, IdbContext
     public DbSet<AppUser> AppUsers { get; set; } = null!;
     public DbSet<Reaction> Reactions { get; set; } = null!;
     public DbSet<SiteSetting> SiteSettings { get; set; } = null!;
+    public DbSet<ScriptBackup> ScriptBackups { get; set; } = null!;
 
     public static TestDbContext Create(string? dbName = null)
     {

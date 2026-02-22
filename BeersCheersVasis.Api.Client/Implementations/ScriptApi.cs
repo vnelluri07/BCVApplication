@@ -59,4 +59,8 @@ public sealed class ScriptApi : IScriptApi
     public async Task ScheduleAsync(int id, DateTime publishDate)
         => await _httpClient.PutAsync($"Script/schedule/{id}?publishDate={publishDate:O}");
     public async Task SetCategoryAsync(int id, int categoryId) => await _httpClient.PutAsync($"Script/set-category/{id}/{categoryId}");
+
+    public async Task<IEnumerable<ScriptBackupResponse>> GetBackupsAsync(int scriptId)
+        => await _httpClient.GetFromJsonAsync<IEnumerable<ScriptBackupResponse>>($"Script/backups/{scriptId}")
+            ?? [];
 }

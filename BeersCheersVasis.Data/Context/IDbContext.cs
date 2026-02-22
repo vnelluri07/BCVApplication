@@ -13,6 +13,7 @@ public interface IdbContext
     DbSet<AppUser> AppUsers { get; }
     DbSet<Reaction> Reactions { get; }
     DbSet<SiteSetting> SiteSettings { get; }
+    DbSet<ScriptBackup> ScriptBackups { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

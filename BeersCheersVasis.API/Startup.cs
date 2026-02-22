@@ -37,6 +37,14 @@ public class Startup
         services.AddSingleton(turnstile);
         services.AddSingleton(jwt);
 
+        // Backup settings + providers
+        var backup = _configuration.GetSection("Backup").Get<BackupSettings>() ?? new();
+        services.AddSingleton(backup);
+        services.AddHttpClient("GitHubBackup");
+        services.AddScoped<IBackupProvider, Internal.GitHubBackupProvider>();
+        services.AddScoped<IBackupProvider, Internal.GoogleDriveBackupProvider>();
+        services.AddScoped<IScriptBackupService, ScriptBackupService>();
+
         // Auth services
         services.AddHttpClient();
         services.AddScoped<ITurnstileService>(sp =>

@@ -195,8 +195,8 @@ public class ScriptRepositoryTests : IDisposable
     {
         SeedScript("A", "C1");
         SeedScript("B", "C2");
-        var count = await _sut.PublishAllScriptsAsync(CancellationToken.None);
-        Assert.Equal(2, count);
+        var ids = await _sut.PublishAllScriptsAsync(CancellationToken.None);
+        Assert.Equal(2, ids.Count);
         Assert.True(_dbContext.Script.All(s => s.IsPublished));
     }
 
@@ -205,8 +205,8 @@ public class ScriptRepositoryTests : IDisposable
     {
         var s = SeedScript();
         await _sut.PublishScriptAsync(s.Id, CancellationToken.None);
-        var count = await _sut.PublishAllScriptsAsync(CancellationToken.None);
-        Assert.Equal(0, count);
+        var ids = await _sut.PublishAllScriptsAsync(CancellationToken.None);
+        Assert.Equal(0, ids.Count);
     }
 
     [Fact]
@@ -257,9 +257,9 @@ public class ScriptRepositoryTests : IDisposable
         await _sut.ScheduleScriptAsync(s3.Id, DateTime.UtcNow.AddMinutes(-5), CancellationToken.None);
         await _sut.PublishScriptAsync(s3.Id, CancellationToken.None);
 
-        var count = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
+        var ids = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
 
-        Assert.Equal(1, count);
+        Assert.Equal(1, ids.Count);
         var due = _dbContext.Script.First(x => x.Id == s1.Id);
         Assert.True(due.IsPublished);
         Assert.Null(due.ScheduledPublishDate);
@@ -272,8 +272,8 @@ public class ScriptRepositoryTests : IDisposable
     public async Task PublishScheduledScriptsAsync_ReturnsZeroWhenNoneDue()
     {
         SeedScript("NoDates", "C");
-        var count = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
-        Assert.Equal(0, count);
+        var ids = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
+        Assert.Equal(0, ids.Count);
     }
 
     [Fact]
@@ -283,7 +283,7 @@ public class ScriptRepositoryTests : IDisposable
         await _sut.ScheduleScriptAsync(s.Id, DateTime.UtcNow.AddMinutes(-5), CancellationToken.None);
         await _sut.SoftDeleteScriptAsync(s.Id, CancellationToken.None);
 
-        var count = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
-        Assert.Equal(0, count);
+        var ids = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
+        Assert.Equal(0, ids.Count);
     }
 }

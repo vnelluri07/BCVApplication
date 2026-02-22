@@ -11,11 +11,11 @@ public interface IScriptRepository
     Task<ScriptResponse> CreateScriptAsync(CreateScriptRequest request, CancellationToken cancellationToken);
     Task<ScriptResponse> UpdateScriptAsync(UpdateScriptRequest request, CancellationToken cancellationToken);
     Task PublishScriptAsync(int id, CancellationToken cancellationToken);
-    Task<int> PublishAllScriptsAsync(CancellationToken cancellationToken);
+    Task<List<int>> PublishAllScriptsAsync(CancellationToken cancellationToken);
     Task UnpublishScriptAsync(int id, CancellationToken cancellationToken);
     Task SoftDeleteScriptAsync(int id, CancellationToken cancellationToken);
     Task RestoreScriptAsync(int id, CancellationToken cancellationToken);
     Task SetCategoryAsync(int id, int categoryId, CancellationToken cancellationToken);
     Task ScheduleScriptAsync(int id, DateTime publishDate, CancellationToken cancellationToken);
-    Task<int> PublishScheduledScriptsAsync(CancellationToken cancellationToken);
+    Task<List<int>> PublishScheduledScriptsAsync(CancellationToken cancellationToken);
 }

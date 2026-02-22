@@ -1,4 +1,5 @@
 using BeersCheersVasis.Repository;
+using BeersCheersVasis.Services;
 
 namespace BeersCheersVasis.API.Internal;
 
@@ -22,9 +23,28 @@ public sealed class ScriptSchedulerService : BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var repo = scope.ServiceProvider.GetRequiredService<IScriptRepository>();
-                var count = await repo.PublishScheduledScriptsAsync(stoppingToken);
-                if (count > 0)
-                    _logger.LogInformation("Published {Count} scheduled script(s)", count);
+                var publishedIds = await repo.PublishScheduledScriptsAsync(stoppingToken);
+                if (publishedIds.Count > 0)
+                {
+                    _logger.LogInformation("Published {Count} scheduled script(s)", publishedIds.Count);
+                    var scriptService = scope.ServiceProvider.GetRequiredService<IScriptService>();
+                    var backupService = scope.ServiceProvider.GetRequiredService<IScriptBackupService>();
+                    foreach (var id in publishedIds)
+                    {
+                        try
+                        {
+                            var script = await scriptService.GetScriptAsync(id, stoppingToken);
+                            if (script is null) continue;
+                            await backupService.BackupScriptAsync(
+                                new BackupPayload(script.Id, script.Title, script.Content, script.CategoryName, script.PublishedDate ?? DateTime.UtcNow),
+                                stoppingToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Backup failed for scheduled script {ScriptId}", id);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {

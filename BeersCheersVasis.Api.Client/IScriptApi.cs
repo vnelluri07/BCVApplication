@@ -17,4 +17,7 @@ public interface IScriptApi
     Task RestoreAsync(int id);
     Task ScheduleAsync(int id, DateTime publishDate);
     Task SetCategoryAsync(int id, int categoryId);
+    Task<IEnumerable<ScriptBackupResponse>> GetBackupsAsync(int scriptId);
 }
+
+public sealed record ScriptBackupResponse(string Provider, string Status, string? ExternalUrl, DateTime BackedUpAt, string? ErrorMessage);
