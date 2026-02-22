@@ -41,7 +41,7 @@
     {
         if (!firstRender) return;
         var theme = await JS.InvokeAsync<string>("localStorage.getItem", "bcv-theme");
-        _isDark = theme == "dark";
+        _isDark = theme != "light";
         await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme','{(_isDark ? "dark" : "light")}')");
         StateHasChanged();
     }
