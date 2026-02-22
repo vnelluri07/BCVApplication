@@ -244,4 +244,46 @@ public class ScriptRepositoryTests : IDisposable
         Assert.Single(published);
         Assert.Equal("Pub", published.First().Title);
     }
+
+    [Fact]
+    public async Task PublishScheduledScriptsAsync_PublishesDueScripts()
+    {
+        var s1 = SeedScript("Due", "C");
+        var s2 = SeedScript("NotDue", "C");
+        var s3 = SeedScript("AlreadyPublished", "C");
+
+        await _sut.ScheduleScriptAsync(s1.Id, DateTime.UtcNow.AddMinutes(-5), CancellationToken.None);
+        await _sut.ScheduleScriptAsync(s2.Id, DateTime.UtcNow.AddDays(7), CancellationToken.None);
+        await _sut.ScheduleScriptAsync(s3.Id, DateTime.UtcNow.AddMinutes(-5), CancellationToken.None);
+        await _sut.PublishScriptAsync(s3.Id, CancellationToken.None);
+
+        var count = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
+
+        Assert.Equal(1, count);
+        var due = _dbContext.Script.First(x => x.Id == s1.Id);
+        Assert.True(due.IsPublished);
+        Assert.Null(due.ScheduledPublishDate);
+
+        var notDue = _dbContext.Script.First(x => x.Id == s2.Id);
+        Assert.False(notDue.IsPublished);
+    }
+
+    [Fact]
+    public async Task PublishScheduledScriptsAsync_ReturnsZeroWhenNoneDue()
+    {
+        SeedScript("NoDates", "C");
+        var count = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
+        Assert.Equal(0, count);
+    }
+
+    [Fact]
+    public async Task PublishScheduledScriptsAsync_SkipsDeletedScripts()
+    {
+        var s = SeedScript("Deleted", "C");
+        await _sut.ScheduleScriptAsync(s.Id, DateTime.UtcNow.AddMinutes(-5), CancellationToken.None);
+        await _sut.SoftDeleteScriptAsync(s.Id, CancellationToken.None);
+
+        var count = await _sut.PublishScheduledScriptsAsync(CancellationToken.None);
+        Assert.Equal(0, count);
+    }
 }
