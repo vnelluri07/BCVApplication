@@ -18,6 +18,23 @@
             <input type="text" placeholder="Title" class="bcv-input bcv-input-lg"
                    @bind="title" @bind:event="oninput" @bind:after="OnContentChanged" />
 
+            <div style="display:flex; gap:1rem; margin-top:1rem; flex-wrap:wrap;">
+                <div style="flex:1; min-width:180px;">
+                    <label class="bcv-text-muted" style="font-size:0.8rem; display:block; margin-bottom:0.25rem;">Category</label>
+                    <select class="bcv-input" @bind="_selectedCategoryId">
+                        <option value="0">No category</option>
+                        @foreach (var c in _categories)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+                </div>
+                <div style="flex:1; min-width:180px;">
+                    <label class="bcv-text-muted" style="font-size:0.8rem; display:block; margin-bottom:0.25rem;">Schedule publish</label>
+                    <input type="datetime-local" class="bcv-input" @bind="_scheduledDate" />
+                </div>
+            </div>
+
             <h3 class="bcv-mt-md bcv-mb-md">Script / Content</h3>
 
             <Editor ScriptSrc="lib/tinymce/tinymce.min.js"
@@ -32,7 +49,13 @@
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
                 <span class="bcv-text-muted" style="font-size:0.85rem;">@WordCount words</span>
-                <button class="bcv-btn bcv-btn-primary" @onclick="OnPublishClick">Publish</button>
+                <div style="display:flex; gap:0.5rem;">
+                    @if (_scheduledDate.HasValue)
+                    {
+                        <button class="bcv-btn" @onclick="OnScheduleClick">Schedule</button>
+                    }
+                    <button class="bcv-btn bcv-btn-primary" @onclick="OnPublishClick">Publish Now</button>
+                </div>
             </div>
         </div>
     </div>
@@ -44,10 +67,15 @@
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private CreateScriptStateService State { get; set; } = default!;
+    [Inject] private BeersCheersVasis.Api.Client.IScriptApi ScriptApi { get; set; } = default!;
+    [Inject] private BeersCheersVasis.Api.Client.ICategoryApi CategoryApi { get; set; } = default!;
 
     private string htmlContent = string.Empty;
     private string title = string.Empty;
     private long WordCount;
+    private int _selectedCategoryId;
+    private DateTime? _scheduledDate;
+    private IEnumerable<BeersCheersVasis.Api.Models.Category.CategoryResponse> _categories = [];
 
     private int? _scriptId;
     private Timer? _debounceTimer;
@@ -89,6 +117,8 @@
     {
         if (firstRender)
         {
+            try { _categories = await CategoryApi.ListAsync(); } catch { }
+
             await State.LoadAsync();
             title = State.Title;
             htmlContent = State.HtmlContent;
@@ -199,9 +229,34 @@
         };
 
         var response = await Controller.CreateScript(request);
-        Snackbar.Add($"Published: {response.Title}", Severity.Success);
 
+        if (_selectedCategoryId > 0)
+            try { await ScriptApi.SetCategoryAsync(response.Id, _selectedCategoryId); } catch { }
+
+        try { await ScriptApi.PublishAsync(response.Id); } catch { }
+
+        Snackbar.Add($"Published: {response.Title}", Severity.Success);
         await State.ClearAsync();
+    }
+
+    private async Task OnScheduleClick()
+    {
+        if (!_scheduledDate.HasValue) return;
+
+        // Save first if not saved yet
+        if (_scriptId is null) await SaveAsync();
+        if (_scriptId is null) return;
+
+        if (_selectedCategoryId > 0)
+            try { await ScriptApi.SetCategoryAsync(_scriptId.Value, _selectedCategoryId); } catch { }
+
+        try
+        {
+            await ScriptApi.ScheduleAsync(_scriptId.Value, _scheduledDate.Value);
+            Snackbar.Add($"Scheduled for {_scheduledDate.Value:MMM d, yyyy h:mm tt}", Severity.Success);
+            await State.ClearAsync();
+        }
+        catch { Snackbar.Add("Failed to schedule", Severity.Error); }
     }
 
     public void Dispose()
