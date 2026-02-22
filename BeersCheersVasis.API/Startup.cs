@@ -3,6 +3,7 @@ using BeersCheersVasis.API.Internal;
 using BeersCheersVasis.Services;
 using BeersCheersVasis.Services.Implementation;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.EntityFrameworkCore;
 
 namespace BeersCheersVasis.API;
 
@@ -52,6 +53,13 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IApiVersionDescriptionProvider provider)
     {
+        // Auto-apply pending migrations
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<BeersCheersAndVasis.UI.Data.Context.IdbContext>() as Microsoft.EntityFrameworkCore.DbContext;
+            db?.Database.Migrate();
+        }
+
         app.UseExceptionHandler(err => err.Run(async context =>
         {
             var ex = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
