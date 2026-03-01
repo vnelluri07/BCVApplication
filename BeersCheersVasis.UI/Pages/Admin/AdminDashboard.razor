@@ -8,11 +8,34 @@
 @inject NavigationManager Nav
 @inject BeersCheersVasis.Api.Client.ISettingsApi SettingsApi
 
-<PageTitle>Admin — Beers Cheers & Vasis</PageTitle>
+<PageTitle>Admin — Beers Cheers & Vasi's</PageTitle>
 
 <section class="bcv-section">
     <div class="bcv-container">
         <h1>Dashboard</h1>
+
+        @if (_loading)
+        {
+            <!-- Skeleton Stats -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1rem; margin-bottom:2rem;">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <div class="bcv-card" style="text-align:center; padding:1.25rem;">
+                        <div class="bcv-skeleton" style="width:3rem;height:2rem;margin:0 auto 0.5rem;"></div>
+                        <div class="bcv-skeleton bcv-skeleton-line" style="width:60%;margin:0 auto;"></div>
+                    </div>
+                }
+            </div>
+            <!-- Skeleton Tab bar -->
+            <div class="bcv-skeleton bcv-skeleton-line" style="width:100%;height:2.5rem;margin-bottom:2rem;"></div>
+            <!-- Skeleton Table -->
+            @for (var i = 0; i < 5; i++)
+            {
+                <div class="bcv-skeleton bcv-skeleton-line" style="margin-bottom:0.75rem;"></div>
+            }
+        }
+        else
+        {
 
         <!-- Stats Cards -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1rem; margin-bottom:2rem;">
@@ -387,6 +410,8 @@
                 }
             </div>
         }
+
+        } @* end else (not loading) *@
     </div>
 </section>
 
@@ -395,6 +420,7 @@
     private string _filter = "all";
     private string _scriptSearch = "";
     private HashSet<int> _selected = new();
+    private bool _loading = true;
 
     private IEnumerable<BeersCheersVasis.Api.Models.Script.ScriptResponse> _allScripts = [];
     private IEnumerable<BeersCheersVasis.Api.Models.Category.CategoryResponse> _categories = [];
@@ -454,6 +480,7 @@
     {
         await Reload();
         _greeting = await SettingsApi.GetAsync("greeting");
+        _loading = false;
     }
 
     private async Task Reload()
