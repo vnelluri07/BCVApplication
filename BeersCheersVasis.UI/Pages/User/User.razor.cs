@@ -1,7 +1,7 @@
 ﻿using BeersCheersVasis.UI.ViewModels.UserManagement.Users;
 using Microsoft.AspNetCore.Components;
 
-namespace BlazorApp3.Pages.User;
+namespace BeersCheersVasis.UI.Pages.User;
 
 public partial class User
 {

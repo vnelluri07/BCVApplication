@@ -29,6 +29,7 @@ public static class ApiConfigureApiService
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IScriptRepository, ScriptRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<IAppUserRepository, AppUserRepository>();
         services.AddScoped<IReactionRepository, ReactionRepository>();
@@ -38,6 +39,7 @@ public static class ApiConfigureApiService
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IScriptService, ScriptService>();
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ISubCategoryService, SubCategoryService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IAppUserService, AppUserService>();
         services.AddScoped<IReactionService, ReactionService>();

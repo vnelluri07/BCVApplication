@@ -2,7 +2,7 @@
 using BeersCheersAndVasis.UI.ViewModels.Script;
 using Microsoft.AspNetCore.Components;
 
-namespace BlazorApp3.Pages.Script
+namespace BeersCheersVasis.UI.Pages.Script
 {
     public partial class Script
     {

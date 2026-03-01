@@ -3,12 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BeersCheersVasis.Data.Entities;
 
-public sealed class Category
+public sealed class SubCategory
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Column("ID")]
     public int Id { get; set; }
+
+    [Required]
+    [Column("CATEGORY_ID")]
+    public int CategoryId { get; set; }
 
     [Required]
     [Column("NAME")]
@@ -39,6 +43,8 @@ public sealed class Category
     [Column("MODIFIED_DATE", TypeName = "DATETIME")]
     public DateTime? ModifiedDate { get; set; }
 
+    [ForeignKey(nameof(CategoryId))]
+    public Category Category { get; set; }
+
     public ICollection<Script> Scripts { get; set; } = new List<Script>();
-    public ICollection<SubCategory> SubCategories { get; set; } = new List<SubCategory>();
 }

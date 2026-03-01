@@ -21,6 +21,9 @@ public sealed class Script
     [Column("CATEGORY_ID")]
     public int? CategoryId { get; set; }
 
+    [Column("SUBCATEGORY_ID")]
+    public int? SubCategoryId { get; set; }
+
     [Required]
     [Column("IS_ACTIVE")]
     public bool IsActive { get; set; }
@@ -57,6 +60,9 @@ public sealed class Script
 
     [ForeignKey(nameof(CategoryId))]
     public Category? Category { get; set; }
+
+    [ForeignKey(nameof(SubCategoryId))]
+    public SubCategory? SubCategory { get; set; }
 
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }

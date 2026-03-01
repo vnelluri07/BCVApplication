@@ -1,7 +1,7 @@
 @page "/create"
 @using BeersCheersAndVasis.UI.Components.Pages.Script
 @using BeersCheersVasis.Api.Models.Script
-@using BlazorApp3.Services
+@using BeersCheersVasis.UI.Services
 @using TinyMCE.Blazor
 @implements IDisposable
 
@@ -39,7 +39,8 @@
 
             <Editor ScriptSrc="lib/tinymce/tinymce.min.js"
                     Id="bcv-editor"
-                    @bind-Value="htmlContent"
+                    Value="@htmlContent"
+                    ValueChanged="OnEditorChanged"
                     Conf="@editorConf"
                     ClassName="bcv-editor" />
 
@@ -80,6 +81,7 @@
     private int? _scriptId;
     private Timer? _debounceTimer;
     private bool _isSaving;
+    private bool _saveInProgress;
     private string saveStatusText = string.Empty;
     private const int DebounceMs = 500;
 
@@ -110,7 +112,8 @@
         { "file_picker_types", "image" },
         { "block_formats", "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Code=pre" },
         { "sandbox_iframes", false },
-        { "extended_valid_elements", "iframe[src|width|height|frameborder|allowfullscreen|allow|style|class],div[class|contenteditable|style]" }
+        { "extended_valid_elements", "iframe[src|width|height|frameborder|allowfullscreen|allow|style|class],div[class|contenteditable|style]" },
+        { "tab_indents", true }
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -148,7 +151,17 @@
     {
         UpdateWordCount();
         await PersistStateAsync();
+        ScheduleAutoSave();
+    }
 
+    private void OnEditorChanged(string value)
+    {
+        htmlContent = value;
+        OnContentChanged();
+    }
+
+    private void ScheduleAutoSave()
+    {
         if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(htmlContent))
             return;
 
@@ -174,6 +187,9 @@
 
     private async Task SaveAsync()
     {
+        if (_saveInProgress) return;
+        _saveInProgress = true;
+
         try
         {
             _isSaving = true;
@@ -213,6 +229,10 @@
             _isSaving = false;
             _saveFailed = true;
             saveStatusText = "Save failed";
+        }
+        finally
+        {
+            _saveInProgress = false;
         }
 
         StateHasChanged();

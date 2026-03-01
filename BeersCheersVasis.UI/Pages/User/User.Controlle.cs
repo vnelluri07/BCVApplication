@@ -3,7 +3,7 @@ using BeersCheersVasis.Api.Client;
 using BeersCheersVasis.UI.ViewModels.UserManagement.Roles;
 using BeersCheersVasis.UI.ViewModels.UserManagement.Users;
 
-namespace BlazorApp3.Pages.User;
+namespace BeersCheersVasis.UI.Pages.User;
 
 public class UserController
 {

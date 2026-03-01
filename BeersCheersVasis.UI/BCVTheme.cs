@@ -1,4 +1,4 @@
-namespace BlazorApp3
+namespace BeersCheersVasis.UI
 {
     public class BCVTheme
     {

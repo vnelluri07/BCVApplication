@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace BlazorApp3.Services;
+namespace BeersCheersVasis.UI.Services;
 
 /// <summary>Holds CreateScript form state across navigation AND browser refresh via sessionStorage.</summary>
 public sealed class CreateScriptStateService

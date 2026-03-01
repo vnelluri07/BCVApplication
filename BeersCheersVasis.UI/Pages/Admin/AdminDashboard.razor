@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @inject BeersCheersVasis.Api.Client.IScriptApi ScriptApi
 @inject BeersCheersVasis.Api.Client.ICategoryApi CategoryApi
+@inject BeersCheersVasis.Api.Client.ISubCategoryApi SubCategoryApi
 @inject BeersCheersVasis.Api.Client.ICommentApi CommentApi
 @inject BeersCheersVasis.Api.Client.IAppUserApi AppUserApi
 @inject NavigationManager Nav
@@ -37,6 +38,7 @@
         <div style="display:flex; gap:1.5rem; border-bottom:2px solid var(--bcv-border); margin-bottom:2rem;">
             <button class="@TabClass("scripts")" @onclick='() => _tab = "scripts"'>Scripts</button>
             <button class="@TabClass("categories")" @onclick='() => _tab = "categories"'>Categories</button>
+            <button class="@TabClass("subcategories")" @onclick='() => _tab = "subcategories"'>Subcategories</button>
             <button class="@TabClass("comments")" @onclick='() => _tab = "comments"'>Comments (@_allComments.Count())</button>
             <button class="@TabClass("users")" @onclick='() => _tab = "users"'>Users (@_allUsers.Count(u => !u.IsAnonymous))</button>
             <button class="@TabClass("settings")" @onclick='() => _tab = "settings"'>Settings</button>
@@ -199,6 +201,82 @@
             }
         }
 
+        @* ═══════════════ SUBCATEGORIES TAB ═══════════════ *@
+        else if (_tab == "subcategories")
+        {
+            <div style="margin-bottom:1.5rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:end;">
+                <div>
+                    <label style="font-size:0.8rem; display:block;">Category</label>
+                    <select @bind="_subCatCategoryId" style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border);">
+                        <option value="0">Select category…</option>
+                        @foreach (var c in _categories.Where(c => c.IsActive))
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; display:block;">Name</label>
+                    <input @bind="_subCatName" placeholder="Subcategory name" style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border);" />
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; display:block;">Icon</label>
+                    <input @bind="_subCatIcon" placeholder="emoji" style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border); width:4rem;" />
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; display:block;">Description</label>
+                    <input @bind="_subCatDesc" placeholder="Optional" style="padding:0.4rem 0.6rem; border:1px solid var(--bcv-border);" />
+                </div>
+                <button class="bcv-btn" @onclick="SaveSubCategory">@(_editSubCatId.HasValue ? "Update" : "Add")</button>
+                @if (_editSubCatId.HasValue)
+                {
+                    <button class="bcv-btn-sm" @onclick="CancelSubCatEdit">Cancel</button>
+                }
+            </div>
+
+            <!-- Filter by category -->
+            <div style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; margin-right:0.5rem;">Filter:</label>
+                <select @bind="_subCatFilterCategoryId" style="padding:0.3rem 0.5rem; border:1px solid var(--bcv-border); font-size:0.85rem;">
+                    <option value="0">All Categories</option>
+                    @foreach (var c in _categories)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </select>
+            </div>
+
+            @if (FilteredSubCategories.Any())
+            {
+                <table class="bcv-admin-table">
+                    <thead>
+                        <tr><th>Icon</th><th>Name</th><th>Category</th><th>Description</th><th>Scripts</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sc in FilteredSubCategories)
+                        {
+                            <tr style="@(sc.IsActive ? "" : "opacity:0.5;")">
+                                <td>@sc.Icon</td>
+                                <td>@sc.Name</td>
+                                <td>@sc.CategoryName</td>
+                                <td>@sc.Description</td>
+                                <td>@sc.ScriptCount</td>
+                                <td><span class="bcv-badge @(sc.IsActive ? "bcv-badge-success" : "bcv-badge-danger")">@(sc.IsActive ? "Active" : "Inactive")</span></td>
+                                <td style="display:flex; gap:0.3rem;">
+                                    <button class="bcv-btn-sm" @onclick="() => EditSubCategory(sc)">Edit</button>
+                                    <button class="bcv-btn-sm" @onclick="() => ToggleSubCategoryActive(sc)">@(sc.IsActive ? "Deactivate" : "Activate")</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="bcv-text-muted">No subcategories found.</p>
+            }
+        }
+
         @* ═══════════════ COMMENTS TAB ═══════════════ *@
         else if (_tab == "comments")
         {
@@ -327,6 +405,13 @@
     private int? _editCatId;
     private string _catName = "", _catIcon = "", _catDesc = "";
 
+    // SubCategory form
+    private int? _editSubCatId;
+    private int _subCatCategoryId;
+    private string _subCatName = "", _subCatIcon = "", _subCatDesc = "";
+    private int _subCatFilterCategoryId;
+    private IEnumerable<BeersCheersVasis.Api.Models.SubCategory.SubCategoryResponse> _subCategories = [];
+
     // Backup status
     private Dictionary<int, List<BackupStatusItem>> _backupStatus = new();
     private sealed record BackupStatusItem(string Provider, string Status, DateTime? BackedUpAt);
@@ -354,6 +439,9 @@
 
     private bool _allFiltered => FilteredScripts.Any() && FilteredScripts.All(s => _selected.Contains(s.Id));
 
+    private IEnumerable<BeersCheersVasis.Api.Models.SubCategory.SubCategoryResponse> FilteredSubCategories =>
+        _subCatFilterCategoryId == 0 ? _subCategories : _subCategories.Where(sc => sc.CategoryId == _subCatFilterCategoryId);
+
     private void ToggleSelect(int id) { if (!_selected.Remove(id)) _selected.Add(id); }
 
     private void ToggleSelectAll()
@@ -372,6 +460,7 @@
     {
         try { _allScripts = await ScriptApi.ListAsync(); } catch { }
         try { _categories = await CategoryApi.ListAsync(); } catch { }
+        try { _subCategories = await SubCategoryApi.ListAsync(); } catch { }
         try { _allComments = await CommentApi.GetAllAsync(); } catch { }
         try { _allUsers = await AppUserApi.GetAllAsync(); } catch { }
         _ = LoadBackupStatusAsync();
@@ -462,6 +551,42 @@
             else
                 await CategoryApi.CreateAsync(new() { Name = _catName, Icon = _catIcon, Description = _catDesc });
             CancelCatEdit();
+            await Reload();
+        }
+        catch { }
+    }
+
+    // SubCategory CRUD
+    private void EditSubCategory(BeersCheersVasis.Api.Models.SubCategory.SubCategoryResponse sc)
+    {
+        _editSubCatId = sc.Id; _subCatCategoryId = sc.CategoryId; _subCatName = sc.Name; _subCatIcon = sc.Icon ?? ""; _subCatDesc = sc.Description ?? "";
+    }
+
+    private void CancelSubCatEdit() { _editSubCatId = null; _subCatCategoryId = 0; _subCatName = _subCatIcon = _subCatDesc = ""; }
+
+    private async Task ToggleSubCategoryActive(BeersCheersVasis.Api.Models.SubCategory.SubCategoryResponse sc)
+    {
+        try
+        {
+            if (sc.IsActive)
+                await SubCategoryApi.DeleteAsync(sc.Id);
+            else
+                await SubCategoryApi.UpdateAsync(new() { Id = sc.Id, CategoryId = sc.CategoryId, Name = sc.Name, Icon = sc.Icon, Description = sc.Description, IsActive = true });
+            await Reload();
+        }
+        catch { }
+    }
+
+    private async Task SaveSubCategory()
+    {
+        if (string.IsNullOrWhiteSpace(_subCatName) || _subCatCategoryId == 0) return;
+        try
+        {
+            if (_editSubCatId.HasValue)
+                await SubCategoryApi.UpdateAsync(new() { Id = _editSubCatId.Value, CategoryId = _subCatCategoryId, Name = _subCatName, Icon = _subCatIcon, Description = _subCatDesc, IsActive = _subCategories.First(sc => sc.Id == _editSubCatId.Value).IsActive });
+            else
+                await SubCategoryApi.CreateAsync(new() { CategoryId = _subCatCategoryId, Name = _subCatName, Icon = _subCatIcon, Description = _subCatDesc });
+            CancelSubCatEdit();
             await Reload();
         }
         catch { }

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 
-namespace BlazorApp3.Services;
+namespace BeersCheersVasis.UI.Services;
 
 public sealed class BcvAuthStateProvider : AuthenticationStateProvider
 {

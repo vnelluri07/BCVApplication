@@ -32,3 +32,6 @@ client_secret_*.json
 ~$*
 BCV-Google-OAuth.docx
 *.docx
+.claude
+BeersCheersVasis.UI/bin
+BeersCheersVasis.UI/obj

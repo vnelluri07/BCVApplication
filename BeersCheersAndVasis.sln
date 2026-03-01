@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeersCheersVasis.Data", "Be
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeersCheersVasis.Services", "BeersCheersVasis.Services\BeersCheersVasis.Services.csproj", "{FF9E37C2-7A32-4770-AE81-0528EAB6B988}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeersCheersVasis.UI", "BlazorApp3\BeersCheersVasis.UI.csproj", "{98E7C101-38BF-4A1B-A667-D0093D567A67}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeersCheersVasis.UI", "BeersCheersVasis.UI\BeersCheersVasis.UI.csproj", "{98E7C101-38BF-4A1B-A667-D0093D567A67}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
 EndProject

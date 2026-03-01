@@ -37,6 +37,19 @@ public class dbContext : DbContext, IdbContext
                 .WithMany(c => c.Scripts)
                 .HasForeignKey(s => s.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(s => s.SubCategory)
+                .WithMany(sc => sc.Scripts)
+                .HasForeignKey(s => s.SubCategoryId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        modelBuilder.Entity<SubCategory>(entity =>
+        {
+            entity.HasOne(sc => sc.Category)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Reaction>(entity =>
@@ -63,6 +76,7 @@ public class dbContext : DbContext, IdbContext
     public DbSet<Reaction> Reactions => Set<Reaction>();
     public DbSet<SiteSetting> SiteSettings => Set<SiteSetting>();
     public DbSet<ScriptBackup> ScriptBackups => Set<ScriptBackup>();
+    public DbSet<SubCategory> SubCategories => Set<SubCategory>();
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {

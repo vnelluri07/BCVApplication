@@ -14,6 +14,7 @@ public interface IdbContext
     DbSet<Reaction> Reactions { get; }
     DbSet<SiteSetting> SiteSettings { get; }
     DbSet<ScriptBackup> ScriptBackups { get; }
+    DbSet<SubCategory> SubCategories { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
