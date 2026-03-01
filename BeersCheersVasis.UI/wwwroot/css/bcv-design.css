@@ -795,6 +795,27 @@ a:hover {
 .bcv-save-indicator.saving { color: #ff9800; }
 .bcv-save-indicator.saved { color: var(--bcv-success); }
 .bcv-save-indicator.failed { color: var(--bcv-danger); }
+.bcv-save-indicator.offline { color: #2196f3; }
+
+/* Floating save pill — always visible, even in TinyMCE fullscreen */
+.bcv-save-pill {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 100000;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.bcv-save-pill.saving  { background: rgba(255,152,0,0.15); color: #ff9800; }
+.bcv-save-pill.saved   { background: rgba(76,175,80,0.15);  color: var(--bcv-success); }
+.bcv-save-pill.failed  { background: rgba(244,67,54,0.15);  color: var(--bcv-danger); }
+.bcv-save-pill.offline { background: rgba(33,150,243,0.15); color: #2196f3; }
 
 /* ============================================
    Content Width

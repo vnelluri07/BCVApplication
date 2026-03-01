@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\BeersCheersVasis.Api.Client\BeersCheersVasis.Api.Client.csproj" />
     <ProjectReference Include="..\..\BeersCheersVasis.Api.Models\BeersCheersVasis.Api.Models.csproj" />
     <ProjectReference Include="..\..\BeersCheersVasis.Data\BeersCheersVasis.Data.csproj" />
+    <ProjectReference Include="..\..\BeersCheersVasis.UI\BeersCheersVasis.UI.csproj" />
   </ItemGroup>
 
 </Project>

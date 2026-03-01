@@ -57,5 +57,6 @@ builder.Services.AddScoped<ScriptController>();
 
 // State
 builder.Services.AddScoped<CreateScriptStateService>();
+builder.Services.AddScoped<OfflineSyncService>();
 
 await builder.Build().RunAsync();

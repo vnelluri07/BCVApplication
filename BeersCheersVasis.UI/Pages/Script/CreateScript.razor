@@ -3,7 +3,7 @@
 @using BeersCheersVasis.Api.Models.Script
 @using BeersCheersVasis.UI.Services
 @using TinyMCE.Blazor
-@implements IDisposable
+@implements IAsyncDisposable
 
 <PageTitle>Create Script — Beers Cheers & Vasi's</PageTitle>
 
@@ -11,8 +11,12 @@
     <div class="bcv-container" style="max-width:960px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
             <h1>Create Script</h1>
-            <span class="bcv-save-indicator @SaveIndicatorClass">@saveStatusText</span>
         </div>
+
+        @if (!string.IsNullOrEmpty(saveStatusText))
+        {
+            <div class="bcv-save-pill @SaveIndicatorClass" title="@SaveTooltip">@saveStatusText</div>
+        }
 
         <div class="bcv-editor-wrap">
             <input type="text" placeholder="Title" class="bcv-input bcv-input-lg"
@@ -70,6 +74,7 @@
     [Inject] private CreateScriptStateService State { get; set; } = default!;
     [Inject] private BeersCheersVasis.Api.Client.IScriptApi ScriptApi { get; set; } = default!;
     [Inject] private BeersCheersVasis.Api.Client.ICategoryApi CategoryApi { get; set; } = default!;
+    [Inject] private OfflineSyncService OfflineSync { get; set; } = default!;
 
     private string htmlContent = string.Empty;
     private string title = string.Empty;
@@ -79,6 +84,7 @@
     private IEnumerable<BeersCheersVasis.Api.Models.Category.CategoryResponse> _categories = [];
 
     private int? _scriptId;
+    private string _offlineLocalId = Guid.NewGuid().ToString("N");
     private Timer? _debounceTimer;
     private bool _isSaving;
     private bool _saveInProgress;
@@ -86,7 +92,12 @@
     private const int DebounceMs = 500;
 
     private bool _saveFailed;
-    private string SaveIndicatorClass => _isSaving ? "saving" : _saveFailed ? "failed" : "saved";
+    private bool _isOffline;
+    private string SaveIndicatorClass => _isSaving ? "saving" : _saveFailed ? "failed" : _isOffline ? "offline" : "saved";
+    private string SaveTooltip => _isSaving ? "Saving your draft..." :
+        _saveFailed ? "Could not save — check your connection" :
+        _isOffline ? "Saved to your browser. Will sync when back online." :
+        "Draft saved to server";
 
     private Dictionary<string, object> editorConf = new()
     {
@@ -131,7 +142,29 @@
             if (_scriptId is not null)
                 saveStatusText = "Saved ✓";
 
+            await OfflineSync.StartMonitoringAsync(OnBackOnlineAsync);
+            await TrySyncPendingAsync();
+
             StateHasChanged();
+        }
+    }
+
+    private async Task OnBackOnlineAsync()
+    {
+        _isOffline = false;
+        await TrySyncPendingAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TrySyncPendingAsync()
+    {
+        var result = await OfflineSync.SyncAllAsync();
+        if (result.SyncedCount > 0)
+        {
+            if (result.LastScriptId.HasValue)
+                _scriptId = result.LastScriptId;
+            await PersistStateAsync();
+            saveStatusText = "Synced ✓";
         }
     }
 
@@ -194,6 +227,7 @@
         {
             _isSaving = true;
             _saveFailed = false;
+            _isOffline = false;
             saveStatusText = "Saving...";
             StateHasChanged();
 
@@ -226,9 +260,19 @@
         }
         catch
         {
+            // Server unreachable — queue offline
+            await OfflineSync.EnqueueDraftAsync(new OfflineDraft
+            {
+                LocalId = _offlineLocalId,
+                ScriptId = _scriptId,
+                Title = title,
+                Content = htmlContent,
+                UserId = 0022
+            });
+            await PersistStateAsync();
             _isSaving = false;
-            _saveFailed = true;
-            saveStatusText = "Save failed";
+            _isOffline = true;
+            saveStatusText = "Saved offline 📴";
         }
         finally
         {
@@ -279,8 +323,9 @@
         catch { Snackbar.Add("Failed to schedule", Severity.Error); }
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         _debounceTimer?.Dispose();
+        await OfflineSync.DisposeAsync();
     }
 }
