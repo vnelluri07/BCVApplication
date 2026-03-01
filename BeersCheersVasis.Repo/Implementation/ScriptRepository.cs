@@ -74,6 +74,7 @@ public class ScriptRepository : IScriptRepository
         script.Content = request.Content;
         script.ModifiedByUserId = request.ModifiedBy;
         script.ModifiedDate = DateTime.UtcNow;
+        script.IsDeleted = false;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
