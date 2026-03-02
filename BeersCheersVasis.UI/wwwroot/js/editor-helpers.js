@@ -88,6 +88,52 @@ window.bcvEditor = {
         editor.on('click', function (e) {
             handleCardClick(editor, e.target);
         });
+
+        // Tab key inserts spaces instead of moving focus
+        editor.on('keydown', function (e) {
+            if (e.keyCode === 9) {
+                e.preventDefault();
+                editor.execCommand('mceInsertContent', false, '&emsp;');
+            }
+        });
+
+        // Autocorrect common typos on space/punctuation
+        var fixes = {
+            'teh':'the','dont':'don\'t','doesnt':'doesn\'t','didnt':'didn\'t',
+            'cant':'can\'t','wont':'won\'t','im':'I\'m','ive':'I\'ve',
+            'youre':'you\'re','theyre':'they\'re','thats':'that\'s',
+            'isnt':'isn\'t','wasnt':'wasn\'t','werent':'weren\'t',
+            'couldnt':'couldn\'t','shouldnt':'shouldn\'t','wouldnt':'wouldn\'t',
+            'hes':'he\'s','shes':'she\'s','its':'it\'s','lets':'let\'s',
+            'whats':'what\'s','whos':'who\'s','theres':'there\'s',
+            'arent':'aren\'t','hasnt':'hasn\'t','havent':'haven\'t',
+            'recieve':'receive','occured':'occurred','seperate':'separate',
+            'definately':'definitely','accomodate':'accommodate',
+            'occurence':'occurrence','neccessary':'necessary',
+            'wierd':'weird','untill':'until','becuase':'because',
+            'tho':'though','thru':'through','alot':'a lot',
+            'i':'I'
+        };
+        editor.on('keydown', function (e) {
+            if (e.keyCode !== 32 && e.keyCode !== 190 && e.keyCode !== 188) return;
+            var rng = editor.selection.getRng();
+            var textNode = rng.startContainer;
+            if (textNode.nodeType !== 3) return;
+            var text = textNode.textContent.substring(0, rng.startOffset);
+            var m = text.match(/(\S+)$/);
+            if (!m) return;
+            var word = m[1];
+            var fixed = fixes[word.toLowerCase()];
+            if (!fixed) return;
+            // preserve leading capital
+            if (word[0] === word[0].toUpperCase() && word !== 'i')
+                fixed = fixed[0].toUpperCase() + fixed.slice(1);
+            var start = rng.startOffset - word.length;
+            textNode.textContent = textNode.textContent.substring(0, start) + fixed + textNode.textContent.substring(rng.startOffset);
+            rng.setStart(textNode, start + fixed.length);
+            rng.setEnd(textNode, start + fixed.length);
+            editor.selection.setRng(rng);
+        });
     }
 
     if (typeof tinymce !== 'undefined') {
