@@ -2,6 +2,7 @@
 @using BeersCheersAndVasis.UI.Components.Pages.Script
 @using BeersCheersVasis.Api.Models.Script
 @using BeersCheersVasis.UI.Services
+@using Microsoft.AspNetCore.Components
 @using TinyMCE.Blazor
 @implements IAsyncDisposable
 
@@ -76,6 +77,9 @@
     [Inject] private BeersCheersVasis.Api.Client.ICategoryApi CategoryApi { get; set; } = default!;
     [Inject] private OfflineSyncService OfflineSync { get; set; } = default!;
 
+    [SupplyParameterFromQuery(Name = "id")]
+    private int? Id { get; set; }
+
     private string htmlContent = string.Empty;
     private string title = string.Empty;
     private long WordCount;
@@ -134,15 +138,33 @@
         {
             try { _categories = await CategoryApi.ListAsync(); } catch { }
 
-            await State.LoadAsync();
-            title = State.Title;
-            htmlContent = State.HtmlContent;
-            _scriptId = State.ScriptId;
+            // If navigated with ?id=, fetch that script from API
+            if (Id.HasValue)
+            {
+                try
+                {
+                    var script = await ScriptApi.GetAsync(Id.Value);
+                    title = script.Title;
+                    htmlContent = script.Content;
+                    _scriptId = script.Id;
+                    _selectedCategoryId = script.CategoryId ?? 0;
+                    await PersistStateAsync();
+                    saveStatusText = "Saved ✓";
+                }
+                catch { }
+            }
+            else
+            {
+                await State.LoadAsync();
+                title = State.Title;
+                htmlContent = State.HtmlContent;
+                _scriptId = State.ScriptId;
+
+                if (_scriptId is not null)
+                    saveStatusText = "Saved ✓";
+            }
+
             UpdateWordCount();
-
-            if (_scriptId is not null)
-                saveStatusText = "Saved ✓";
-
             await OfflineSync.StartMonitoringAsync(OnBackOnlineAsync);
             await TrySyncPendingAsync();
 
